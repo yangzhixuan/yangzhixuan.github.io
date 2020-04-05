@@ -142,10 +142,12 @@ main aside h2 {
 }
 
 .contact p {
-  line-height : 0.5;
   color: var(--cs-header);
   font-style: italic;
   font-size: 120%;
+  margin-top: 0px;
+    margin-bottom: 0px;
+
 }
 .contact h2 {
   color: var(--cs-header);
@@ -181,7 +183,6 @@ main p {
 }
 
 div.contact {
-  padding-left: 1em;
 }
 
 @media screen and (min-width: 64em)	{
