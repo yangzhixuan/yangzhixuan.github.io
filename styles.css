@@ -1,0 +1,240 @@
+
+:root {
+  --josh-yellow: #faf6e8;
+  --imperial-blue: #003e74;
+  --imperial-navy: #002147;
+
+  --cs-background: #fff;
+  --cs-tip-background: #333;
+  --cs-tip-text: #f8f8f8;
+  --cs-header: #002147;
+  --footer-color: #aaa698;
+  --imperial-blue: #003e74;
+  --cs-text: #161515;
+  --cs-link-active: #ab8876;
+  --cs-link-decoration: #cac0b6;
+  --cs-navbar: #f1e3bb;
+  --cs-navbar-link: #592c35;
+  --cs-navbar-link-hover: #be7847;
+  --cs-navbar-link-active: #e1a358;
+  --cs-expertise: #887b1b;
+  --cs-type-published: #00ab28;
+  --cs-type-warning: #a97318;
+  --cs-type-unpublished: #ed2634;
+  --cs-publication-link: #1e4e82;
+  --cs-publication-link-hover: #0096ff;
+  --cs-publication-link-active: #00c8ff;
+  --cs-publication-info: #fefcf8;
+  --cs-publication-more-info-link: #006c46;
+  --cs-publication-more-info-link-hover: #00c800;
+  --cs-publication-more-info-link-active: #00e900;
+  --cs-publication-target: #f5ecd1;
+  --cs-publication-target-border: #592c35;
+  --cs-code: #782327;
+  --cs-post-number-opacity: .2;
+}
+
+
+/* Spacing */
+body {
+  margin: 0 auto;
+  max-width: 60em;
+  line-height: 1.5;
+  padding: 4em 1em;
+  padding-bottom: 1em;
+}
+
+h3 {
+}
+
+section {
+  margin-bottom: 1em;
+}
+
+
+/* Colouring and fonts */
+body {
+  font-family: "Open Sans", "Noto Sans SC", "Helvetica", "Arial", sans-serif; 
+  color: var(--cs-text);
+}
+main {
+  background-color: #fff;
+}
+
+
+body .pure-g [class*=pure-u] {
+  font-family: "Open Sans", "Noto Sans SC", "Helvetica", "Arial", sans-serif !important; 
+}
+
+h1,h2,h3 {
+  font-weight: bold;
+  color: var(--cs-header);
+}
+
+a {
+  /*text-decoration: underline;
+  text-decoration-style: dotted;*/
+  color: var(--imperial-blue);
+}
+
+/* Code and pre */
+code,pre {
+  /* border-bottom: 1px solid #d8dee9;*/
+  color: var(--cs-code);
+  font-family: "Fira Code", monospace;
+}
+
+code {
+  padding: 2px 4px;
+  vertical-align: text-bottom;
+}
+
+pre {
+  padding: 1em;
+  border-left: 2px solid #69c;
+}
+
+main aside h2 {
+  text-transform: uppercase;
+  margin-top: 13px;
+}
+
+
+/* Photo */
+#photo {
+  display: inline-block;
+  height: 150px;
+  vertical-align: middle;
+  width: 150px;
+  border-radius: 5px;
+}
+
+/* Tooltip */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tiptext {
+  display: inline-block;
+  visibility: hidden;
+  background-color: var(--cs-tip-background);
+  text-align: left;
+  padding-left: 16px;
+  padding-right: 16px;
+  
+  color: var(--cs-tip-text);
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  
+  position: absolute;
+  z-index: 1;
+  bottom: 100%;
+  left: 0;
+  width: 30em;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tiptext {
+  visibility: visible;
+}
+
+.contact p {
+  line-height : 0.5;
+  color: var(--cs-header);
+  font-style: italic;
+  font-size: 120%;
+}
+.contact h2 {
+  color: var(--cs-header);
+}
+
+#basic-info h2 {
+    font-size: 150%;
+}
+
+main p {
+  text-align: justify;
+  text-justify: auto;
+  hyphens: auto;
+}
+
+
+.todo {
+  color:red;
+  visibility:hidden;
+  display: inline-block;
+}
+
+.it {
+  font-style: italic;
+}
+
+
+
+.emph {
+  font-weight: bold;
+  font-style: italic;
+  color: var(--imperial-navy);
+}
+
+div.contact {
+  padding-left: 1em;
+}
+
+@media screen and (min-width: 64em)	{
+  main {
+    border: 1px solid rgba(0,0,0,0.025);
+    padding: 4em;
+    box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
+  }
+  body {
+    background-color: var(--josh-yellow);
+  }
+  aside {
+    text-align: right;
+    padding-right: 3em;
+  }
+  div.contact {
+    padding-left: 0;
+  }
+
+}
+
+ul li {
+ /* margin-left: -20px;*/
+}
+
+.pub-entry {
+  border-left: 4px dotted rgb(0,0,0,0.5);
+  
+  margin-top: 1.5em;
+  padding-left: 0.5em;
+}
+
+.pub-title {
+  font-weight: bold;
+}
+
+.pub-venue {
+  font-style: italic;
+}
+
+.pub-authors a {
+  color: inherit;
+  text-decoration: none;
+}
+
+footer {
+  text-align: center;
+  margin-top: 5em;
+  font-size: 80%;
+  color: var(--footer-color);
+  margin-bottom: 1em;
+}
+
+footer a {
+  color: inherit;
+}
