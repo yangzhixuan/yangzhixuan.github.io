@@ -1,6 +1,7 @@
 
 :root {
   --josh-yellow: #faf6e8;
+  --nick-blue: #549dc0;
   --imperial-blue: #003e74;
   --imperial-navy: #002147;
 
@@ -192,7 +193,7 @@ div.contact {
     box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
   }
   body {
-    background-color: var(--josh-yellow);
+    background-color: #add2e1;
   }
   aside {
     text-align: right;
