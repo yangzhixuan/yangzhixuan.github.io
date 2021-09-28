@@ -221,7 +221,7 @@ ul li {
   font-weight: bold;
 }
 
-.pub-venue {
+.pub-venue, .pub-resources {
   font-style: italic;
 }
 
