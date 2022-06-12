@@ -241,3 +241,19 @@ footer {
 footer a {
   color: inherit;
 }
+
+.small-photo{
+  display: inline-block;
+  margin: 0px;
+  height: 30px;
+  width: 30px;
+  position: relative;
+  top: 7px;
+  border-radius: 5px;
+}
+
+.small-photo:hover{
+    height: 200px;
+    width: 200px;
+    border-radius: 5px;
+}
