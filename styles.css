@@ -190,11 +190,10 @@ div.contact {
   main {
     border: 1px solid rgba(0,0,0,0.025);
     padding: 4em;
-    box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
+    box-shadow: 0rem 1rem 3rem rgba(0,0,0,0.5) !important;
   }
   body {
-    background: rgb(85,85,85);
-    background: radial-gradient(circle, rgba(85,85,85,1) 28%, rgba(34,34,34,1) 72%);
+    background: rgb(255,255,255);
   }
   aside {
     text-align: right;
