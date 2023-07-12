@@ -187,11 +187,13 @@ div.contact {
 }
 
 @media screen and (min-width: 64em)	{
+  /*
   main {
     border: 1px solid rgba(0,0,0,0.025);
     padding: 4em;
     box-shadow: 0rem 1rem 3rem rgba(0,0,0,0.5) !important;
   }
+  */
   body {
     background: rgb(255,255,255);
   }
