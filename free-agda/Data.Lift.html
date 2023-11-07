@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Data.Lift</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">module</a> <a id="32" href="Data.Lift.html" class="Module">Data.Lift</a> <a id="42" class="Keyword">where</a>
+
+<a id="49" class="Keyword">open</a> <a id="54" class="Keyword">import</a> <a id="61" href="Level.html" class="Module">Level</a>
+
+<a id="68" class="Keyword">record</a> <a id="Lift"></a><a id="75" href="Data.Lift.html#75" class="Record">Lift</a> <a id="80" class="Symbol">{</a><a id="81" href="Data.Lift.html#81" class="Bound">ℓ₁</a> <a id="84" href="Data.Lift.html#84" class="Bound">ℓ₂</a><a id="86" class="Symbol">}</a> <a id="88" class="Symbol">(</a><a id="89" href="Data.Lift.html#89" class="Bound">A</a> <a id="91" class="Symbol">:</a> <a id="93" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="98" href="Data.Lift.html#81" class="Bound">ℓ₁</a><a id="100" class="Symbol">)</a> <a id="102" class="Symbol">:</a> <a id="104" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="109" class="Symbol">(</a><a id="110" href="Data.Lift.html#81" class="Bound">ℓ₁</a> <a id="113" href="Agda.Primitive.html#810" class="Primitive Operator">ℓ⊔</a> <a id="116" href="Data.Lift.html#84" class="Bound">ℓ₂</a><a id="118" class="Symbol">)</a> <a id="120" class="Keyword">where</a>
+  <a id="128" class="Keyword">constructor</a> <a id="lift"></a><a id="140" href="Data.Lift.html#140" class="InductiveConstructor">lift</a>
+  <a id="147" class="Keyword">field</a> <a id="Lift.lower"></a><a id="153" href="Data.Lift.html#153" class="Field">lower</a> <a id="159" class="Symbol">:</a> <a id="161" href="Data.Lift.html#89" class="Bound">A</a>
+<a id="163" class="Keyword">open</a> <a id="168" href="Data.Lift.html#75" class="Module">Lift</a> <a id="173" class="Keyword">public</a>
+
+<a id="181" class="Keyword">open</a> <a id="186" class="Keyword">import</a> <a id="193" href="Isomorphism.html" class="Module">Isomorphism</a>
+
+<a id="lift⇔"></a><a id="206" href="Data.Lift.html#206" class="Function">lift⇔</a> <a id="212" class="Symbol">:</a> <a id="214" href="Level.html#270" class="Generalizable">A</a> <a id="216" href="Cubical.Foundations.Isomorphism.html#770" class="Record Operator">⇔</a> <a id="218" href="Data.Lift.html#75" class="Record">Lift</a> <a id="223" class="Symbol">{</a><a id="224" class="Argument">ℓ₂</a> <a id="227" class="Symbol">=</a> <a id="229" href="Level.html#256" class="Generalizable">b</a><a id="230" class="Symbol">}</a> <a id="232" href="Level.html#270" class="Generalizable">A</a>
+<a id="234" href="Data.Lift.html#206" class="Function">lift⇔</a> <a id="240" class="Symbol">.</a><a id="241" href="Cubical.Foundations.Isomorphism.html#882" class="Field">fun</a> <a id="245" class="Symbol">=</a> <a id="247" href="Data.Lift.html#140" class="InductiveConstructor">lift</a>
+<a id="252" href="Data.Lift.html#206" class="Function">lift⇔</a> <a id="258" class="Symbol">.</a><a id="259" href="Cubical.Foundations.Isomorphism.html#898" class="Field">inv</a> <a id="263" class="Symbol">=</a> <a id="265" href="Data.Lift.html#153" class="Field">lower</a>
+<a id="271" href="Data.Lift.html#206" class="Function">lift⇔</a> <a id="277" class="Symbol">.</a><a id="278" href="Cubical.Foundations.Isomorphism.html#914" class="Field">rightInv</a> <a id="287" href="Data.Lift.html#287" class="Bound">x</a> <a id="289" href="Data.Lift.html#289" class="Bound">i</a> <a id="291" class="Symbol">=</a> <a id="293" href="Data.Lift.html#287" class="Bound">x</a>
+<a id="295" href="Data.Lift.html#206" class="Function">lift⇔</a> <a id="301" class="Symbol">.</a><a id="302" href="Cubical.Foundations.Isomorphism.html#945" class="Field">leftInv</a>  <a id="311" href="Data.Lift.html#311" class="Bound">x</a> <a id="313" href="Data.Lift.html#313" class="Bound">i</a> <a id="315" class="Symbol">=</a> <a id="317" href="Data.Lift.html#311" class="Bound">x</a>
+</pre></body></html>

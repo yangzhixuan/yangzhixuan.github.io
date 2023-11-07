@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Data.String.Properties</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">module</a> <a id="32" href="Data.String.Properties.html" class="Module">Data.String.Properties</a> <a id="55" class="Keyword">where</a>
+
+<a id="62" class="Keyword">open</a> <a id="67" class="Keyword">import</a> <a id="74" href="Data.String.html" class="Module">Data.String</a>
+<a id="86" class="Keyword">open</a> <a id="91" class="Keyword">import</a> <a id="98" href="Data.Nat.Properties.html" class="Module">Data.Nat.Properties</a>
+<a id="118" class="Keyword">open</a> <a id="123" class="Keyword">import</a> <a id="130" href="Decidable.html" class="Module">Decidable</a>
+<a id="140" class="Keyword">open</a> <a id="145" class="Keyword">import</a> <a id="152" href="Data.Sigma.html" class="Module">Data.Sigma</a>
+<a id="163" class="Keyword">open</a> <a id="168" class="Keyword">import</a> <a id="175" href="Path.html" class="Module">Path</a>
+<a id="180" class="Keyword">open</a> <a id="185" class="Keyword">import</a> <a id="192" href="Identity.html" class="Module">Identity</a>
+<a id="201" class="Keyword">open</a> <a id="206" class="Keyword">import</a> <a id="213" href="Function.html" class="Module">Function</a>
+<a id="222" class="Keyword">open</a> <a id="227" class="Keyword">import</a> <a id="234" href="Agda.Builtin.Char.html" class="Module">Agda.Builtin.Char</a>
+<a id="252" class="Keyword">open</a> <a id="257" class="Keyword">import</a> <a id="264" href="Agda.Builtin.Char.Properties.html" class="Module">Agda.Builtin.Char.Properties</a>
+
+<a id="discreteChar"></a><a id="294" href="Data.String.Properties.html#294" class="Function">discreteChar</a> <a id="307" class="Symbol">:</a> <a id="309" href="Cubical.Relation.Nullary.Base.html#1382" class="Function">Discrete</a> <a id="318" href="Agda.Builtin.Char.html#227" class="Postulate">Char</a>
+<a id="323" href="Data.String.Properties.html#294" class="Function">discreteChar</a> <a id="336" class="Symbol">=</a>
+  <a id="340" href="Decidable.html#1902" class="Function">inj-discrete</a>
+    <a id="357" class="Symbol">(</a><a id="358" href="Agda.Builtin.Char.html#437" class="Primitive">primCharToNat</a> <a id="372" href="Agda.Builtin.Sigma.html#236" class="InductiveConstructor Operator">,</a> <a id="374" href="Identity.html#201" class="Function">id-to-path</a> <a id="385" href="Function.html#292" class="Function Operator">∘</a> <a id="387" href="Agda.Builtin.Char.Properties.html#219" class="Primitive">primCharToNatInjective</a> <a id="410" class="Symbol">_</a> <a id="412" class="Symbol">_</a> <a id="414" href="Function.html#292" class="Function Operator">∘</a> <a id="416" href="Identity.html#256" class="Function">path-to-id</a><a id="426" class="Symbol">)</a>
+    <a id="432" href="Data.Nat.Properties.html#890" class="Function">discreteNat</a>
+
+<a id="445" class="Keyword">open</a> <a id="450" class="Keyword">import</a> <a id="457" href="HLevels.html" class="Module">HLevels</a>
+
+<a id="isSetChar"></a><a id="466" href="Data.String.Properties.html#466" class="Function">isSetChar</a> <a id="476" class="Symbol">:</a> <a id="478" href="Cubical.Foundations.Prelude.html#10320" class="Function">isSet</a> <a id="484" href="Agda.Builtin.Char.html#227" class="Postulate">Char</a>
+<a id="489" href="Data.String.Properties.html#466" class="Function">isSetChar</a> <a id="499" class="Symbol">=</a> <a id="501" href="Cubical.Relation.Nullary.Properties.html#5757" class="Function">Discrete→isSet</a> <a id="516" href="Data.String.Properties.html#294" class="Function">discreteChar</a>
+
+<a id="530" class="Keyword">open</a> <a id="535" class="Keyword">import</a> <a id="542" href="Cubical.Data.List.Properties.html" class="Module">Cubical.Data.List.Properties</a> <a id="571" class="Keyword">using</a> <a id="577" class="Symbol">(</a><a id="578" href="Cubical.Data.List.Properties.html#3821" class="Function">isOfHLevelList</a><a id="592" class="Symbol">)</a>
+
+<a id="isSetString"></a><a id="595" href="Data.String.Properties.html#595" class="Function">isSetString</a> <a id="607" class="Symbol">:</a> <a id="609" href="Cubical.Foundations.Prelude.html#10320" class="Function">isSet</a> <a id="615" href="Data.String.html#232" class="Function">String</a>
+<a id="622" href="Data.String.Properties.html#595" class="Function">isSetString</a> <a id="634" class="Symbol">=</a> <a id="636" href="Cubical.Data.List.Properties.html#3821" class="Function">isOfHLevelList</a> <a id="651" class="Number">0</a> <a id="653" href="Data.String.Properties.html#466" class="Function">isSetChar</a>
+</pre></body></html>

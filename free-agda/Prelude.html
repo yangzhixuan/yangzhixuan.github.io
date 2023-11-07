@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Prelude</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">module</a> <a id="32" href="Prelude.html" class="Module">Prelude</a> <a id="40" class="Keyword">where</a>
+
+<a id="47" class="Keyword">open</a> <a id="52" class="Keyword">import</a> <a id="59" href="Data.Sigma.html" class="Module">Data.Sigma</a> <a id="70" class="Keyword">public</a>
+<a id="77" class="Keyword">open</a> <a id="82" class="Keyword">import</a> <a id="89" href="Data.Sigma.Properties.html" class="Module">Data.Sigma.Properties</a> <a id="111" class="Keyword">public</a>
+  <a id="120" class="Keyword">using</a> <a id="126" class="Symbol">(</a><a id="127" href="Cubical.Data.Sigma.Properties.html#2083" class="Function">PathPΣ</a><a id="133" class="Symbol">;</a> <a id="135" href="Cubical.Data.Sigma.Properties.html#1919" class="Function">ΣPathP</a><a id="141" class="Symbol">;</a> <a id="143" href="Cubical.Data.Sigma.Properties.html#11942" class="Function">Σ≡Prop</a><a id="149" class="Symbol">;</a> <a id="151" href="Cubical.Data.Sigma.Properties.html#4484" class="Function">⇔-Σ-swap</a><a id="159" class="Symbol">;</a> <a id="161" href="Cubical.Data.Sigma.Properties.html#4794" class="Function">⇔-Σ-assoc</a><a id="170" class="Symbol">)</a>
+<a id="172" class="Keyword">open</a> <a id="177" class="Keyword">import</a> <a id="184" href="Data.Empty.html" class="Module">Data.Empty</a> <a id="195" class="Keyword">public</a>
+<a id="202" class="Keyword">open</a> <a id="207" class="Keyword">import</a> <a id="214" href="Data.Empty.Properties.html" class="Module">Data.Empty.Properties</a> <a id="236" class="Keyword">public</a>
+<a id="243" class="Keyword">open</a> <a id="248" class="Keyword">import</a> <a id="255" href="Equiv.html" class="Module">Equiv</a> <a id="261" class="Keyword">public</a>
+<a id="268" class="Keyword">open</a> <a id="273" class="Keyword">import</a> <a id="280" href="Data.Unit.html" class="Module">Data.Unit</a> <a id="290" class="Keyword">public</a>
+<a id="297" class="Keyword">open</a> <a id="302" class="Keyword">import</a> <a id="309" href="Data.Bool.html" class="Module">Data.Bool</a> <a id="319" class="Keyword">public</a>
+<a id="326" class="Keyword">open</a> <a id="331" class="Keyword">import</a> <a id="338" href="Data.Nat.html" class="Module">Data.Nat</a> <a id="347" class="Keyword">public</a>
+<a id="354" class="Keyword">open</a> <a id="359" class="Keyword">import</a> <a id="366" href="Data.Fin.html" class="Module">Data.Fin</a> <a id="375" class="Keyword">public</a>
+<a id="382" class="Keyword">open</a> <a id="387" class="Keyword">import</a> <a id="394" href="Data.Maybe.html" class="Module">Data.Maybe</a> <a id="405" class="Keyword">public</a>
+<a id="412" class="Keyword">open</a> <a id="417" class="Keyword">import</a> <a id="424" href="Level.html" class="Module">Level</a> <a id="430" class="Keyword">public</a>
+<a id="437" class="Keyword">open</a> <a id="442" class="Keyword">import</a> <a id="449" href="Level.Literals.html" class="Module">Level.Literals</a> <a id="464" class="Keyword">public</a>
+<a id="471" class="Keyword">open</a> <a id="476" class="Keyword">import</a> <a id="483" href="Function.html" class="Module">Function</a> <a id="492" class="Keyword">public</a>
+<a id="499" class="Keyword">open</a> <a id="504" class="Keyword">import</a> <a id="511" href="Function.Reasoning.html" class="Module">Function.Reasoning</a> <a id="530" class="Keyword">public</a>
+<a id="537" class="Keyword">open</a> <a id="542" class="Keyword">import</a> <a id="549" href="Path.html" class="Module">Path</a> <a id="554" class="Keyword">public</a>
+<a id="561" class="Keyword">open</a> <a id="566" class="Keyword">import</a> <a id="573" href="Path.Reasoning.html" class="Module">Path.Reasoning</a> <a id="588" class="Keyword">public</a>
+<a id="595" class="Keyword">open</a> <a id="600" class="Keyword">import</a> <a id="607" href="Data.Sum.html" class="Module">Data.Sum</a> <a id="616" class="Keyword">public</a>
+<a id="623" class="Keyword">open</a> <a id="628" class="Keyword">import</a> <a id="635" href="Isomorphism.html" class="Module">Isomorphism</a> <a id="647" class="Keyword">public</a>
+<a id="654" class="Keyword">open</a> <a id="659" class="Keyword">import</a> <a id="666" href="Data.List.html" class="Module">Data.List</a> <a id="676" class="Keyword">public</a>
+<a id="683" class="Keyword">open</a> <a id="688" class="Keyword">import</a> <a id="695" href="HLevels.html" class="Module">HLevels</a> <a id="703" class="Keyword">public</a>
+<a id="710" class="Keyword">open</a> <a id="715" class="Keyword">import</a> <a id="722" href="Decidable.html" class="Module">Decidable</a> <a id="732" class="Keyword">public</a>
+<a id="739" class="Keyword">open</a> <a id="744" class="Keyword">import</a> <a id="751" href="Inspect.html" class="Module">Inspect</a> <a id="759" class="Keyword">public</a>
+<a id="766" class="Keyword">open</a> <a id="771" class="Keyword">import</a> <a id="778" href="Literals.Number.html" class="Module">Literals.Number</a> <a id="794" class="Keyword">public</a>
+<a id="801" class="Keyword">open</a> <a id="806" class="Keyword">import</a> <a id="813" href="Identity.html" class="Module">Identity</a> <a id="822" class="Keyword">public</a>
+<a id="829" class="Keyword">open</a> <a id="834" class="Keyword">import</a> <a id="841" href="Data.Bool.Properties.html" class="Module">Data.Bool.Properties</a> <a id="862" class="Keyword">public</a>
+<a id="869" class="Keyword">open</a> <a id="874" class="Keyword">import</a> <a id="881" href="Strict.html" class="Module">Strict</a> <a id="888" class="Keyword">public</a>
+<a id="895" class="Keyword">open</a> <a id="900" class="Keyword">import</a> <a id="907" href="Data.Lift.html" class="Module">Data.Lift</a> <a id="917" class="Keyword">public</a>
+
+<a id="925" class="Keyword">open</a> <a id="930" class="Keyword">import</a> <a id="937" href="Data.Unit.UniversePolymorphic.html" class="Module">Data.Unit.UniversePolymorphic</a>
+  <a id="969" class="Keyword">renaming</a> <a id="978" class="Symbol">(</a><a id="979" href="Data.Unit.UniversePolymorphic.html#107" class="Record">⊤</a> <a id="981" class="Symbol">to</a> <a id="984" class="Record">Poly-⊤</a><a id="990" class="Symbol">;</a> <a id="992" href="Data.Unit.UniversePolymorphic.html#147" class="InductiveConstructor">tt</a> <a id="995" class="Symbol">to</a> <a id="998" class="InductiveConstructor">Poly-tt</a><a id="1005" class="Symbol">)</a>
+  <a id="1009" class="Keyword">public</a>
+
+<a id="1017" class="Keyword">open</a> <a id="1022" class="Keyword">import</a> <a id="1029" href="Data.Empty.UniversePolymorphic.html" class="Module">Data.Empty.UniversePolymorphic</a>
+  <a id="1062" class="Keyword">renaming</a> <a id="1071" class="Symbol">(</a><a id="1072" href="Data.Empty.UniversePolymorphic.html#94" class="Datatype">⊥</a> <a id="1074" class="Symbol">to</a> <a id="1077" class="Datatype">Poly-⊥</a><a id="1083" class="Symbol">)</a>
+  <a id="1087" class="Keyword">public</a>
+
+<a id="1095" class="Keyword">open</a> <a id="1100" class="Keyword">import</a> <a id="1107" href="HITs.SetQuotients.html" class="Module">HITs.SetQuotients</a> <a id="1125" class="Keyword">public</a>
+<a id="1132" class="Keyword">open</a> <a id="1137" class="Keyword">import</a> <a id="1144" href="HITs.SetTruncation.html" class="Module">HITs.SetTruncation</a> <a id="1163" class="Keyword">public</a>
+<a id="1170" class="Keyword">open</a> <a id="1175" class="Keyword">import</a> <a id="1182" href="HITs.PropositionalTruncation.html" class="Module">HITs.PropositionalTruncation</a> <a id="1211" class="Keyword">public</a>
+
+<a id="1219" class="Keyword">open</a> <a id="1224" class="Keyword">import</a> <a id="1231" href="Data.String.html" class="Module">Data.String</a> <a id="1243" class="Keyword">using</a> <a id="1249" class="Symbol">(</a><a id="1250" href="Agda.Builtin.Char.html#227" class="Postulate">Char</a><a id="1254" class="Symbol">;</a> <a id="1256" href="Data.String.html#232" class="Function">String</a><a id="1262" class="Symbol">;</a> <a id="1264" href="Agda.Builtin.String.html#454" class="Primitive">primStringToList</a><a id="1280" class="Symbol">)</a> <a id="1282" class="Keyword">public</a>
+</pre></body></html>

@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Truth.MonoLevel</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">open</a> <a id="30" class="Keyword">import</a> <a id="37" href="Prelude.html" class="Module">Prelude</a>
+
+<a id="46" class="Keyword">module</a> <a id="53" href="Truth.MonoLevel.html" class="Module">Truth.MonoLevel</a> <a id="69" class="Symbol">(</a><a id="70" href="Truth.MonoLevel.html#70" class="Bound">ℓ</a> <a id="72" class="Symbol">:</a> <a id="74" href="Agda.Primitive.html#597" class="Postulate">Level</a><a id="79" class="Symbol">)</a> <a id="81" class="Keyword">where</a>
+
+<a id="88" class="Keyword">import</a> <a id="95" href="Truth.html" class="Module">Truth</a> <a id="101" class="Symbol">as</a> <a id="104" class="Module">Poly</a>
+
+<a id="110" class="Keyword">open</a> <a id="115" href="Truth.html" class="Module">Poly</a> <a id="120" class="Keyword">using</a> <a id="126" class="Symbol">(</a><a id="127" href="Truth.html#2088" class="Function">proves</a><a id="133" class="Symbol">;</a> <a id="135" href="Truth.html#2836" class="Function">disproves</a><a id="144" class="Symbol">)</a>
+
+<a id="Ω"></a><a id="147" href="Truth.MonoLevel.html#147" class="Function">Ω</a> <a id="149" class="Symbol">:</a> <a id="151" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="156" class="Symbol">(</a><a id="157" href="Agda.Primitive.html#780" class="Primitive">ℓsuc</a> <a id="162" href="Truth.MonoLevel.html#70" class="Bound">ℓ</a><a id="163" class="Symbol">)</a>
+<a id="165" href="Truth.MonoLevel.html#147" class="Function">Ω</a> <a id="167" class="Symbol">=</a> <a id="169" href="Truth.html#1037" class="Record">Poly.Ω</a> <a id="176" href="Truth.MonoLevel.html#70" class="Bound">ℓ</a>
+
+<a id="True"></a><a id="179" href="Truth.MonoLevel.html#179" class="Function">True</a> <a id="184" class="Symbol">:</a> <a id="186" href="Truth.MonoLevel.html#147" class="Function">Ω</a>
+<a id="188" href="Truth.MonoLevel.html#179" class="Function">True</a> <a id="193" class="Symbol">=</a> <a id="195" href="Truth.html#1174" class="Function">Poly.True</a>
+
+<a id="False"></a><a id="206" href="Truth.MonoLevel.html#206" class="Function">False</a> <a id="212" class="Symbol">:</a> <a id="214" href="Truth.MonoLevel.html#147" class="Function">Ω</a>
+<a id="216" href="Truth.MonoLevel.html#206" class="Function">False</a> <a id="222" class="Symbol">=</a> <a id="224" href="Truth.html#2775" class="Function">Poly.False</a>
+
+<a id="|T|"></a><a id="236" href="Truth.MonoLevel.html#236" class="Function">|T|</a> <a id="240" class="Symbol">:</a> <a id="242" href="Agda.Builtin.Bool.html#163" class="Datatype">Bool</a> <a id="247" class="Symbol">→</a> <a id="249" href="Truth.MonoLevel.html#147" class="Function">Ω</a>
+<a id="251" href="Truth.MonoLevel.html#236" class="Function">|T|</a> <a id="255" class="Symbol">=</a> <a id="257" href="Truth.html#5590" class="Function">Poly.|T|</a>
+
+<a id="distinct"></a><a id="267" href="Truth.MonoLevel.html#267" class="Function">distinct</a> <a id="276" class="Symbol">:</a>
+  <a id="280" href="Data.Empty.html#129" class="Function Operator">¬</a> <a id="282" class="Symbol">(</a><a id="283" href="Data.Sigma.html#517" class="Function">Σ[</a> <a id="286" href="Truth.MonoLevel.html#286" class="Bound">p</a> <a id="288" href="Data.Sigma.html#517" class="Function">⦂</a> <a id="290" href="Truth.MonoLevel.html#147" class="Function">Ω</a> <a id="292" href="Data.Sigma.html#517" class="Function">]</a> <a id="294" href="Data.Sigma.html#517" class="Function">×</a> <a id="296" href="Truth.MonoLevel.html#286" class="Bound">p</a> <a id="298" href="Path.html#731" class="Function Operator">≢</a> <a id="300" href="Truth.MonoLevel.html#179" class="Function">True</a> <a id="305" href="Data.Sigma.html#650" class="Function Operator">×</a> <a id="307" href="Truth.MonoLevel.html#286" class="Bound">p</a> <a id="309" href="Path.html#731" class="Function Operator">≢</a> <a id="311" href="Truth.MonoLevel.html#206" class="Function">False</a><a id="316" class="Symbol">)</a>
+<a id="318" href="Truth.MonoLevel.html#267" class="Function">distinct</a> <a id="327" class="Symbol">(</a><a id="328" href="Truth.MonoLevel.html#328" class="Bound">p</a> <a id="330" href="Agda.Builtin.Sigma.html#236" class="InductiveConstructor Operator">,</a> <a id="332" href="Truth.MonoLevel.html#332" class="Bound">p≢True</a> <a id="339" href="Agda.Builtin.Sigma.html#236" class="InductiveConstructor Operator">,</a> <a id="341" href="Truth.MonoLevel.html#341" class="Bound">p≢False</a><a id="348" class="Symbol">)</a> <a id="350" class="Symbol">=</a> <a id="352" href="Truth.MonoLevel.html#341" class="Bound">p≢False</a> <a id="360" class="Symbol">(</a><a id="361" href="Truth.html#2836" class="Function">disproves</a> <a id="371" class="Symbol">(</a><a id="372" href="Truth.MonoLevel.html#332" class="Bound">p≢True</a> <a id="379" href="Function.html#292" class="Function Operator">∘</a> <a id="381" href="Truth.html#2088" class="Function">proves</a><a id="387" class="Symbol">))</a>
+</pre></body></html>

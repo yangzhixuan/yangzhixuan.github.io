@@ -1,0 +1,731 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>README</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Pragma">--experimental-lossy-unification</a> <a id="53" class="Symbol">#-}</a>
+
+<a id="58" class="Keyword">module</a> <a id="65" href="README.html" class="Module">README</a> <a id="72" class="Keyword">where</a>
+
+<a id="79" class="Comment">-- This file contains an index for the code snippets referenced in the paper,</a>
+<a id="157" class="Comment">-- pointing to their definitions in the agda formalisation.</a>
+<a id="217" class="Comment">-- You can read it alongside the paper, and click on the relevant defs to</a>
+<a id="291" class="Comment">-- get to the code for each.</a>
+
+<a id="321" class="Comment">--==============================================================================</a>
+<a id="402" class="Comment">-- Section 1: Introduction</a>
+<a id="429" class="Comment">--==============================================================================</a>
+
+<a id="511" class="Comment">-- Hoare logic</a>
+
+<a id="527" class="Keyword">import</a> <a id="534" href="Hoare.Definition.html" class="Module">Hoare.Definition</a>
+  <a id="553" class="Keyword">using</a>
+  <a id="561" class="Symbol">(</a> <a id="563" href="Hoare.Definition.html#2354" class="Function">hoare-def-explicit</a> <a id="582" class="Comment">-- Encoding displayed in paper</a>
+  <a id="615" class="Symbol">;</a> <a id="617" href="Hoare.Definition.html#3578" class="Record">Hoare</a>              <a id="636" class="Comment">-- Actual encoding, equivalent</a>
+  <a id="669" class="Symbol">;</a> <a id="671" class="Keyword">module</a> <a id="678" href="Hoare.Definition.html#1739" class="Module">DisplayGlobal</a>
+  <a id="694" class="Symbol">)</a>
+ 
+<a id="698" class="Comment">-- The signature of nondeterminism</a>
+
+<a id="734" class="Keyword">import</a> <a id="741" href="Effects.NonDet.html" class="Module">Effects.NonDet</a>
+  <a id="758" class="Keyword">using</a>
+  <a id="766" class="Symbol">(</a> <a id="768" href="Effects.NonDet.html#5413" class="Function">NonDet</a>
+  <a id="777" class="Symbol">;</a> <a id="779" href="Effects.NonDet.html#536" class="Function">ℕ𝔻</a>
+  <a id="784" class="Symbol">)</a>
+
+<a id="787" class="Comment">-- The signature of state</a>
+
+<a id="814" class="Keyword">import</a> <a id="821" href="Effects.State.html" class="Module">Effects.State</a>
+  <a id="837" class="Keyword">using</a>
+  <a id="845" class="Symbol">(</a> <a id="847" class="Keyword">module</a> <a id="854" href="Effects.State.html#321" class="Module">StateFunctor</a> <a id="867" class="Comment">-- In the paper, the S is an argument to Op; here, it is</a>
+                        <a id="948" class="Comment">-- paramaterised over the whole module.</a>
+  <a id="990" class="Symbol">;</a> <a id="992" href="Effects.State.html#527" class="Function">𝕊</a>
+  <a id="996" class="Symbol">)</a>
+
+<a id="999" class="Comment">-- Associativity of &lt;|&gt;</a>
+
+<a id="1024" class="Keyword">import</a> <a id="1031" href="Effects.NonDet.html" class="Module">Effects.NonDet</a>
+  <a id="1048" class="Keyword">using</a>
+  <a id="1056" class="Symbol">(</a> <a id="1058" class="Keyword">module</a> <a id="1065" href="Effects.NonDet.html#3321" class="Module">AssocLaw</a>
+  <a id="1076" class="Symbol">)</a>
+
+<a id="1079" class="Comment">-- put-put law</a>
+
+<a id="1095" class="Keyword">import</a> <a id="1102" href="Effects.State.html" class="Module">Effects.State</a>
+  <a id="1118" class="Keyword">using</a>
+  <a id="1126" class="Symbol">(</a> <a id="1128" class="Keyword">module</a> <a id="1135" href="Effects.State.html#1224" class="Module">PutPutLawDisplay</a>
+  <a id="1154" class="Symbol">)</a>
+
+<a id="1157" class="Comment">-- Finiteness condition</a>
+
+<a id="1182" class="Keyword">import</a> <a id="1189" href="Finite.html" class="Module">Finite</a>
+  <a id="1198" class="Keyword">using</a>
+  <a id="1206" class="Symbol">(</a> <a id="1208" href="Finite.html#132" class="Function">ℰ</a>
+  <a id="1212" class="Symbol">)</a>
+
+<a id="1215" class="Comment">-- Parsing equality</a>
+
+<a id="1236" class="Keyword">import</a> <a id="1243" href="Effects.Parser.HElim.html" class="Module">Effects.Parser.HElim</a>
+  <a id="1266" class="Keyword">using</a>
+  <a id="1274" class="Symbol">(</a> <a id="1276" href="Effects.Parser.HElim.html#7867" class="Function">push-print-parse</a>
+  <a id="1295" class="Symbol">)</a>
+
+<a id="1298" class="Comment">-- Parsing Hoare triple</a>
+
+<a id="1323" class="Keyword">import</a> <a id="1330" href="Effects.Parser.TreeParser.html" class="Module">Effects.Parser.TreeParser</a>
+  <a id="1358" class="Keyword">using</a>
+  <a id="1366" class="Symbol">(</a> <a id="1368" href="Effects.Parser.TreeParser.html#9895" class="Function">round-trip</a>
+  <a id="1381" class="Symbol">)</a>
+
+<a id="1384" class="Comment">-- Tree Parsing, Fig. 2</a>
+
+<a id="1409" class="Keyword">import</a> <a id="1416" href="Effects.Parser.html" class="Module">Effects.Parser</a>
+  <a id="1433" class="Keyword">using</a>
+  <a id="1441" class="Symbol">(</a> <a id="1443" href="Effects.Parser.html#2703" class="Function">any-char</a>
+  <a id="1454" class="Symbol">;</a> <a id="1456" href="Effects.Parser.html#2802" class="Function">char</a>
+  <a id="1463" class="Symbol">)</a>
+
+<a id="1466" class="Keyword">import</a> <a id="1473" href="Data.Tree.html" class="Module">Data.Tree</a>
+  <a id="1485" class="Keyword">using</a>
+  <a id="1493" class="Symbol">(</a> <a id="1495" href="Data.Tree.html#125" class="Datatype">Tree</a>
+  <a id="1502" class="Symbol">)</a>
+
+<a id="1505" class="Keyword">import</a> <a id="1512" href="Effects.Parser.TreeParser.html" class="Module">Effects.Parser.TreeParser</a>
+  <a id="1540" class="Keyword">using</a>
+  <a id="1548" class="Symbol">(</a> <a id="1550" href="Effects.Parser.TreeParser.html#639" class="Function">parse-tree</a>
+  <a id="1563" class="Symbol">)</a>
+
+<a id="1566" class="Comment">--==============================================================================</a>
+<a id="1647" class="Comment">-- Section 2: Algebraic Signatures and Algebras</a>
+<a id="1695" class="Comment">--==============================================================================</a>
+
+<a id="1777" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="1858" class="Comment">-- 2.1 Algebraic Signatures</a>
+<a id="1886" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="1968" class="Comment">-- Signature</a>
+
+<a id="1982" class="Keyword">import</a> <a id="1989" href="Signatures.html" class="Module">Signatures</a>
+  <a id="2002" class="Keyword">using</a>
+  <a id="2010" class="Symbol">(</a> <a id="2012" href="Signatures.html#348" class="Record">Signature</a>
+  <a id="2024" class="Symbol">)</a>
+
+<a id="2027" class="Comment">-- Fin</a>
+
+<a id="2035" class="Keyword">import</a> <a id="2042" href="Data.Fin.html" class="Module">Data.Fin</a>
+  <a id="2053" class="Keyword">using</a>
+  <a id="2061" class="Symbol">(</a> <a id="2063" class="Keyword">module</a> <a id="2070" href="Data.Fin.html#157" class="Module">DisplayDef</a>
+  <a id="2083" class="Symbol">)</a>
+
+<a id="2086" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="2167" class="Comment">-- 2.2 Algebras of Signatures</a>
+<a id="2197" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="2279" class="Comment">-- Interpreting a Signatures</a>
+
+<a id="2309" class="Keyword">import</a> <a id="2316" href="Signatures.html" class="Module">Signatures</a>
+  <a id="2329" class="Keyword">using</a>
+  <a id="2337" class="Symbol">(</a> <a id="2339" href="Signatures.html#483" class="Function Operator">⟦_⟧</a>
+  <a id="2345" class="Symbol">)</a>
+
+<a id="2348" class="Comment">-- F-alg</a>
+
+<a id="2358" class="Keyword">import</a> <a id="2365" href="Signatures.html" class="Module">Signatures</a>
+  <a id="2378" class="Keyword">using</a>
+  <a id="2386" class="Symbol">(</a> <a id="2388" href="Signatures.html#828" class="Function Operator">_-Alg[_]</a>
+  <a id="2399" class="Symbol">)</a>
+
+<a id="2402" class="Comment">-- Interpretations for nondeterminism</a>
+
+<a id="2441" class="Keyword">import</a> <a id="2448" href="Effects.NonDet.html" class="Module">Effects.NonDet</a>
+  <a id="2465" class="Keyword">using</a>
+  <a id="2473" class="Symbol">(</a> <a id="2475" href="Effects.NonDet.html#875" class="Function">list-int</a>
+  <a id="2486" class="Symbol">;</a> <a id="2488" href="Effects.NonDet.html#1211" class="Function">all-int</a>
+  <a id="2498" class="Symbol">;</a> <a id="2500" href="Effects.NonDet.html#1067" class="Function">any-int</a>
+  <a id="2510" class="Symbol">)</a>
+
+<a id="2513" class="Comment">-- Interpretation for State</a>
+
+<a id="2542" class="Keyword">import</a> <a id="2549" href="Effects.State.html" class="Module">Effects.State</a>
+  <a id="2565" class="Keyword">using</a>
+  <a id="2573" class="Symbol">(</a> <a id="2575" href="Effects.State.html#2296" class="Function">state-alg</a>
+  <a id="2587" class="Symbol">)</a>
+
+<a id="2590" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="2671" class="Comment">-- 2.3 Term Algebras</a>
+<a id="2692" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="2774" class="Comment">-- Syntax type</a>
+
+<a id="2790" class="Keyword">import</a> <a id="2797" href="FreeMonad.Syntax.html" class="Module">FreeMonad.Syntax</a>
+  <a id="2816" class="Keyword">using</a>
+  <a id="2824" class="Symbol">(</a> <a id="2826" href="FreeMonad.Syntax.html#356" class="Datatype">Syntax</a>
+  <a id="2835" class="Symbol">)</a>
+
+<a id="2838" class="Comment">-- Odds example</a>
+
+<a id="2855" class="Keyword">import</a> <a id="2862" href="Effects.NonDet.html" class="Module">Effects.NonDet</a>
+  <a id="2879" class="Keyword">using</a>
+  <a id="2887" class="Symbol">(</a> <a id="2889" class="Keyword">module</a> <a id="2896" href="Effects.NonDet.html#2389" class="Module">OddsExample</a>
+  <a id="2910" class="Symbol">;</a> <a id="2912" class="Keyword">module</a> <a id="2919" href="Effects.NonDet.html#1383" class="Module">Synt</a>
+  <a id="2926" class="Symbol">)</a>
+
+<a id="2929" class="Keyword">open</a> <a id="2934" href="Effects.NonDet.html#2389" class="Module">Effects.NonDet.OddsExample</a>
+  <a id="2963" class="Keyword">using</a>
+  <a id="2971" class="Symbol">(</a> <a id="2973" href="Effects.NonDet.html#2539" class="Function">guard</a>
+  <a id="2981" class="Symbol">;</a> <a id="2983" href="Effects.NonDet.html#2662" class="Function">up-to</a>
+  <a id="2991" class="Symbol">;</a> <a id="2993" href="Effects.NonDet.html#3028" class="Function">odds</a>
+  <a id="3000" class="Symbol">)</a>
+
+<a id="3003" class="Keyword">open</a> <a id="3008" href="Effects.NonDet.html#1383" class="Module">Effects.NonDet.Synt</a>
+  <a id="3030" class="Keyword">using</a>
+  <a id="3038" class="Symbol">(</a> <a id="3040" href="Effects.NonDet.html#2133" class="Function Operator">_&lt;|&gt;_</a>
+  <a id="3048" class="Symbol">;</a> <a id="3050" href="Effects.NonDet.html#2299" class="Function">fail</a>
+  <a id="3057" class="Symbol">;</a> <a id="3059" class="Keyword">module</a> <a id="3066" href="Effects.NonDet.html#1718" class="Module">BindParameterised</a>
+  <a id="3086" class="Symbol">)</a>
+
+<a id="3089" class="Keyword">open</a> <a id="3094" href="Effects.NonDet.html#1718" class="Module">BindParameterised</a>
+  <a id="3114" class="Keyword">using</a>
+  <a id="3122" class="Symbol">(</a> <a id="3124" href="Effects.NonDet.html#1786" class="Function">return</a>
+  <a id="3133" class="Symbol">;</a> <a id="3135" href="Effects.NonDet.html#1886" class="Function Operator">_&gt;&gt;=_</a>
+  <a id="3143" class="Symbol">)</a>
+
+<a id="3146" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="3227" class="Comment">-- 2.4 Interpreting the Syntax Tree</a>
+<a id="3263" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="3345" class="Comment">-- interp function</a>
+
+<a id="3365" class="Keyword">import</a> <a id="3372" href="FreeMonad.Syntax.html" class="Module">FreeMonad.Syntax</a>
+  <a id="3391" class="Keyword">using</a>
+  <a id="3399" class="Symbol">(</a> <a id="3401" href="FreeMonad.Syntax.html#1079" class="Function">interp</a>
+  <a id="3410" class="Symbol">;</a> <a id="3412" class="Keyword">module</a> <a id="3419" href="FreeMonad.Syntax.html#2509" class="Module">SyntaxBind</a>
+  <a id="3432" class="Symbol">)</a>
+
+<a id="3435" class="Comment">-- &gt;&gt;= using interp</a>
+
+<a id="3456" class="Keyword">open</a> <a id="3461" href="FreeMonad.Syntax.html#2509" class="Module">FreeMonad.Syntax.SyntaxBind</a>
+  <a id="3491" class="Keyword">using</a>
+  <a id="3499" class="Symbol">(</a> <a id="3501" href="FreeMonad.Syntax.html#2745" class="Function Operator">_&gt;&gt;=_</a>
+  <a id="3509" class="Symbol">)</a>
+
+<a id="3512" class="Comment">-- syntax-alg</a>
+
+<a id="3527" class="Keyword">import</a> <a id="3534" href="FreeMonad.Syntax.html" class="Module">FreeMonad.Syntax</a>
+  <a id="3553" class="Keyword">using</a>
+  <a id="3561" class="Symbol">(</a> <a id="3563" href="FreeMonad.Syntax.html#674" class="Function">syntax-alg</a>
+  <a id="3576" class="Symbol">)</a>
+
+<a id="3579" class="Comment">-- interp-id</a>
+
+<a id="3593" class="Keyword">import</a> <a id="3600" href="FreeMonad.Syntax.html" class="Module">FreeMonad.Syntax</a>
+  <a id="3619" class="Keyword">using</a>
+  <a id="3627" class="Symbol">(</a> <a id="3629" href="FreeMonad.Syntax.html#3728" class="Function">interp-id</a>
+  <a id="3641" class="Symbol">)</a>
+
+<a id="3644" class="Comment">-- interp comp</a>
+
+<a id="3660" class="Keyword">import</a> <a id="3667" href="FreeMonad.Syntax.html" class="Module">FreeMonad.Syntax</a>
+  <a id="3686" class="Keyword">using</a>
+  <a id="3694" class="Symbol">(</a> <a id="3696" href="FreeMonad.Syntax.html#4799" class="Function">interp-comp</a>
+  <a id="3710" class="Symbol">)</a>
+
+<a id="3713" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="3794" class="Comment">-- 2.5 Freeness of Syntax</a>
+<a id="3820" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="3902" class="Comment">-- Homomorphisms</a>
+
+<a id="3920" class="Keyword">import</a> <a id="3927" href="Signatures.html" class="Module">Signatures</a>
+  <a id="3940" class="Keyword">using</a>
+  <a id="3948" class="Symbol">(</a> <a id="3950" href="Signatures.html#1061" class="Function Operator">_⟶_</a>
+  <a id="3956" class="Symbol">;</a> <a id="3958" href="Signatures.html#724" class="Function">cmap</a>
+  <a id="3965" class="Symbol">)</a>
+
+
+<a id="3969" class="Comment">-- Theorem 2.1: Syntax is free</a>
+
+<a id="4001" class="Keyword">import</a> <a id="4008" href="FreeMonad.Syntax.html" class="Module">FreeMonad.Syntax</a>
+  <a id="4027" class="Keyword">using</a>
+  <a id="4035" class="Symbol">(</a> <a id="4037" href="FreeMonad.Syntax.html#6241" class="Function">syntax-is-free</a>
+  <a id="4054" class="Symbol">)</a>
+
+<a id="4057" class="Comment">--==============================================================================</a>
+<a id="4138" class="Comment">-- Section 3: Algebraic Theories and Models</a>
+<a id="4182" class="Comment">--==============================================================================</a>
+
+<a id="4264" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="4345" class="Comment">-- Equations</a>
+<a id="4358" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="4440" class="Keyword">import</a> <a id="4447" href="FreeMonad.Theory.html" class="Module">FreeMonad.Theory</a>
+  <a id="4466" class="Keyword">using</a> 
+  <a id="4475" class="Symbol">(</a> <a id="4477" href="FreeMonad.Theory.html#632" class="Record">Equation</a>
+  <a id="4488" class="Symbol">)</a>
+
+<a id="4491" class="Keyword">open</a> <a id="4496" href="Effects.NonDet.html#3321" class="Module">Effects.NonDet.AssocLaw</a>
+  <a id="4522" class="Keyword">using</a>
+  <a id="4530" class="Symbol">(</a> <a id="4532" class="Keyword">module</a> <a id="4539" href="Effects.NonDet.html#3347" class="Module">Literals</a>
+  <a id="4550" class="Symbol">)</a>
+
+<a id="4553" class="Comment">-- Assoc law</a>
+
+<a id="4567" class="Keyword">open</a> <a id="4572" href="Effects.NonDet.html#3347" class="Module">Literals</a>
+  <a id="4583" class="Keyword">using</a>
+  <a id="4591" class="Symbol">(</a> <a id="4593" href="Effects.NonDet.html#3410" class="Function">assoc</a>
+  <a id="4601" class="Symbol">)</a>
+
+<a id="4604" class="Comment">-- Assoc law with syntactic sugar</a>
+
+<a id="4639" class="Keyword">open</a> <a id="4644" href="Effects.NonDet.html#3321" class="Module">Effects.NonDet.AssocLaw</a>
+  <a id="4670" class="Keyword">using</a>
+  <a id="4678" class="Symbol">(</a> <a id="4680" href="Effects.NonDet.html#3556" class="Function">assoc</a>
+  <a id="4688" class="Symbol">)</a>
+
+<a id="4691" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="4772" class="Comment">-- Contexts</a>
+<a id="4784" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="4866" class="Comment">-- Law</a>
+
+<a id="4874" class="Keyword">import</a> <a id="4881" href="FreeMonad.Theory.html" class="Module">FreeMonad.Theory</a>
+  <a id="4900" class="Keyword">using</a>
+  <a id="4908" class="Symbol">(</a> <a id="4910" href="FreeMonad.Theory.html#1229" class="Record">Law</a>
+  <a id="4916" class="Symbol">)</a>
+
+<a id="4919" class="Comment">-- Put-put law</a>
+<a id="4934" class="Keyword">import</a> <a id="4941" href="Effects.State.html" class="Module">Effects.State</a>
+  <a id="4957" class="Keyword">using</a>
+  <a id="4965" class="Symbol">(</a> <a id="4967" class="Keyword">module</a> <a id="4974" href="Effects.State.html#1224" class="Module">PutPutLawDisplay</a>
+  <a id="4993" class="Symbol">)</a>
+
+<a id="4996" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="5077" class="Comment">-- Theories</a>
+<a id="5089" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="5171" class="Keyword">import</a> <a id="5178" href="FreeMonad.Theory.html" class="Module">FreeMonad.Theory</a>
+  <a id="5197" class="Keyword">using</a>
+  <a id="5205" class="Symbol">(</a> <a id="5207" href="FreeMonad.Theory.html#1569" class="Record">Theory</a>
+  <a id="5216" class="Symbol">)</a>
+
+<a id="5219" class="Comment">-- State laws</a>
+
+<a id="5234" class="Keyword">import</a> <a id="5241" href="Effects.State.html" class="Module">Effects.State</a>
+  <a id="5257" class="Keyword">using</a>
+  <a id="5265" class="Symbol">(</a> <a id="5267" class="Keyword">module</a> <a id="5274" href="Effects.State.html#803" class="Module">Synt</a>
+  <a id="5281" class="Symbol">)</a>
+
+<a id="5284" class="Keyword">open</a> <a id="5289" href="Effects.State.html#803" class="Module">Effects.State.Synt</a>
+  <a id="5310" class="Keyword">using</a>
+  <a id="5318" class="Symbol">(</a> <a id="5320" href="Effects.State.html#1494" class="Datatype">Laws</a>
+  <a id="5327" class="Symbol">;</a> <a id="5329" href="Effects.State.html#1637" class="Function">Eqns</a>
+  <a id="5336" class="Symbol">)</a>
+
+<a id="5339" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="5420" class="Comment">-- Models</a>
+<a id="5430" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="5512" class="Comment">-- Respects, models</a>
+
+<a id="5533" class="Keyword">import</a> <a id="5540" href="FreeMonad.Theory.html" class="Module">FreeMonad.Theory</a>
+  <a id="5559" class="Keyword">using</a>
+  <a id="5567" class="Symbol">(</a> <a id="5569" href="FreeMonad.Theory.html#2333" class="Function Operator">_Respects_</a>
+  <a id="5582" class="Symbol">;</a> <a id="5584" href="FreeMonad.Theory.html#2552" class="Function Operator">_Models_</a>
+  <a id="5595" class="Symbol">;</a> <a id="5597" href="FreeMonad.Theory.html#2756" class="Function Operator">_-Model[_]</a>
+  <a id="5610" class="Symbol">)</a>
+
+<a id="5613" class="Comment">--==============================================================================</a>
+<a id="5694" class="Comment">-- Section 4: Free Models of Algebraic Theories</a>
+<a id="5742" class="Comment">--==============================================================================</a>
+
+<a id="5824" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="5905" class="Comment">-- 4.1 Quotient Types</a>
+<a id="5927" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="6009" class="Comment">-- Set quotient</a>
+
+<a id="6026" class="Keyword">import</a> <a id="6033" href="Examples.Quotients.html" class="Module">Examples.Quotients</a>
+  <a id="6054" class="Keyword">using</a>
+  <a id="6062" class="Symbol">(</a> <a id="6064" href="Examples.Quotients.html#543" class="InductiveConstructor Operator">[_]</a>
+  <a id="6070" class="Symbol">;</a> <a id="6072" href="Examples.Quotients.html#305" class="Function">isSet</a>
+  <a id="6080" class="Symbol">;</a> <a id="6082" href="Examples.Quotients.html#181" class="Function">isProp</a>
+  <a id="6091" class="Symbol">;</a> <a id="6093" href="Examples.Quotients.html#766" class="Function">rec/</a>
+  <a id="6100" class="Symbol">)</a>
+
+<a id="6103" class="Comment">-- Bag example</a>
+
+<a id="6119" class="Keyword">import</a> <a id="6126" href="Examples.Bag.html" class="Module">Examples.Bag</a>
+  <a id="6141" class="Keyword">using</a>
+  <a id="6149" class="Symbol">(</a> <a id="6151" href="Examples.Bag.html#294" class="Datatype Operator">_↺_</a>
+  <a id="6157" class="Symbol">;</a> <a id="6159" href="Examples.Bag.html#575" class="Function">size</a>
+  <a id="6166" class="Symbol">)</a>
+
+<a id="6169" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="6250" class="Comment">-- 4.2 Program Equivalence</a>
+<a id="6277" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="6359" class="Keyword">import</a> <a id="6366" href="FreeMonad.Relation.html" class="Module">FreeMonad.Relation</a>
+  <a id="6387" class="Keyword">using</a>
+  <a id="6395" class="Symbol">(</a> <a id="6397" href="FreeMonad.Relation.html#1294" class="Datatype Operator">_~ₜ_</a>
+  <a id="6404" class="Symbol">)</a>
+
+<a id="6407" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="6488" class="Comment">-- 4.3 Terms up to Program Equivalence</a>
+<a id="6527" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="6609" class="Comment">-- Term type</a>
+
+<a id="6623" class="Keyword">import</a> <a id="6630" href="FreeMonad.Quotiented.html" class="Module">FreeMonad.Quotiented</a>
+  <a id="6653" class="Keyword">using</a>
+  <a id="6661" class="Symbol">(</a> <a id="6663" href="FreeMonad.Relation.html#1961" class="Function">Term</a>
+  <a id="6670" class="Symbol">;</a> <a id="6672" href="FreeMonad.Relation.html#2073" class="Function Operator">[_]ₜ</a>
+  <a id="6679" class="Symbol">)</a>
+
+<a id="6682" class="Comment">-- interpₜ</a>
+
+<a id="6694" class="Keyword">import</a> <a id="6701" href="FreeMonad.Quotiented.html" class="Module">FreeMonad.Quotiented</a>
+  <a id="6724" class="Keyword">using</a>
+  <a id="6732" class="Symbol">(</a> <a id="6734" href="FreeMonad.Relation.html#5763" class="Function">interpₜ</a>
+  <a id="6744" class="Symbol">)</a>
+
+<a id="6747" class="Comment">-- Lemma 4.1: interpₜ-cong</a>
+
+<a id="6775" class="Keyword">import</a> <a id="6782" href="FreeMonad.Quotiented.html" class="Module">FreeMonad.Quotiented</a>
+  <a id="6805" class="Keyword">using</a>
+  <a id="6813" class="Symbol">(</a> <a id="6815" href="FreeMonad.Relation.html#4702" class="Function">interpₜ-cong</a>
+  <a id="6830" class="Symbol">)</a>
+
+<a id="6833" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="6914" class="Comment">-- 4.4 Term Models</a>
+<a id="6933" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="7015" class="Comment">-- opₜ</a>
+
+<a id="7023" class="Keyword">import</a> <a id="7030" href="FreeMonad.Quotiented.html" class="Module">FreeMonad.Quotiented</a>
+  <a id="7053" class="Keyword">using</a>
+  <a id="7061" class="Symbol">(</a> <a id="7063" href="FreeMonad.Quotiented.html#3914" class="Function">opₜ</a>
+  <a id="7069" class="Symbol">)</a>
+
+<a id="7072" class="Comment">-- Quotient Preserving</a>
+
+<a id="7096" class="Keyword">import</a> <a id="7103" href="FinitenessConditions.html" class="Module">FinitenessConditions</a>
+  <a id="7126" class="Keyword">using</a>
+  <a id="7134" class="Symbol">(</a> <a id="7136" href="FinitenessConditions.html#473" class="Function">dist</a>
+  <a id="7143" class="Symbol">;</a> <a id="7145" href="FinitenessConditions.html#156" class="Function">Pointwise</a>
+  <a id="7157" class="Symbol">;</a> <a id="7159" href="FinitenessConditions.html#624" class="Function">quot-pre</a>
+  <a id="7170" class="Symbol">)</a>
+
+<a id="7173" class="Comment">-- Bind on Term</a>
+
+<a id="7190" class="Keyword">import</a> <a id="7197" href="FreeMonad.Quotiented.html" class="Module">FreeMonad.Quotiented</a>
+  <a id="7220" class="Keyword">using</a>
+  <a id="7228" class="Symbol">(</a> <a id="7230" href="FreeMonad.Quotiented.html#5654" class="Function Operator">_&gt;&gt;=_</a>
+  <a id="7238" class="Symbol">)</a>
+
+<a id="7241" class="Comment">-- Theorem 4.3: Term is free</a>
+
+<a id="7271" class="Keyword">import</a> <a id="7278" href="FreeMonad.IsFree.html" class="Module">FreeMonad.IsFree</a>
+  <a id="7297" class="Keyword">using</a>
+  <a id="7305" class="Symbol">(</a> <a id="7307" href="FreeMonad.IsFree.html#1350" class="Function">⟦f⟧-hom</a>
+  <a id="7317" class="Symbol">;</a> <a id="7319" href="FreeMonad.IsFree.html#1689" class="Function">uniq</a>
+  <a id="7326" class="Symbol">)</a>
+
+<a id="7329" class="Comment">-- Corollary 4.4: Birkhoff&#39;s completeness theorem</a>
+
+<a id="7380" class="Keyword">import</a> <a id="7387" href="FreeMonad.IsFree.html" class="Module">FreeMonad.IsFree</a>
+  <a id="7406" class="Keyword">using</a>
+  <a id="7414" class="Symbol">(</a> <a id="7416" href="FreeMonad.IsFree.html#604" class="Function">≈⇒∼</a>
+  <a id="7422" class="Symbol">)</a>
+
+<a id="7425" class="Comment">--==============================================================================</a>
+<a id="7506" class="Comment">-- Section 5: Programming with Effects</a>
+<a id="7545" class="Comment">--==============================================================================</a>
+
+<a id="7627" class="Comment">-- print</a>
+
+<a id="7637" class="Keyword">import</a> <a id="7644" href="Effects.Parser.TreeParser.html" class="Module">Effects.Parser.TreeParser</a>
+  <a id="7672" class="Keyword">using</a>
+  <a id="7680" class="Symbol">(</a> <a id="7682" href="Effects.Parser.TreeParser.html#1113" class="Function">print</a>
+  <a id="7690" class="Symbol">)</a>
+
+<a id="7693" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="7774" class="Comment">-- Combining Signatures</a>
+<a id="7798" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="7880" class="Keyword">import</a> <a id="7887" href="Signatures.html" class="Module">Signatures</a>
+  <a id="7900" class="Keyword">using</a>
+  <a id="7908" class="Symbol">(</a> <a id="7910" href="Signatures.html#1423" class="Function Operator">_⊞_</a>
+  <a id="7916" class="Symbol">)</a>
+
+<a id="7919" class="Comment">-- Operations on parser</a>
+
+<a id="7944" class="Keyword">import</a> <a id="7951" href="Effects.Parser.html" class="Module">Effects.Parser</a>
+  <a id="7968" class="Keyword">using</a>
+  <a id="7976" class="Symbol">(</a> <a id="7978" class="Keyword">module</a> <a id="7985" href="Effects.Parser.html#708" class="Module">SyntaxExamples</a>
+  <a id="8002" class="Symbol">)</a>
+
+<a id="8005" class="Keyword">open</a> <a id="8010" href="Effects.Parser.html#708" class="Module">Effects.Parser.SyntaxExamples</a>
+  <a id="8042" class="Keyword">using</a>
+  <a id="8050" class="Symbol">(</a> <a id="8052" href="Effects.Parser.html#1043" class="Function">fail</a>
+  <a id="8059" class="Symbol">;</a> <a id="8061" href="Effects.Parser.html#832" class="Function">put</a>
+  <a id="8067" class="Symbol">;</a> <a id="8069" href="Effects.Parser.html#942" class="Function">get</a>
+  <a id="8075" class="Symbol">;</a> <a id="8077" href="Effects.Parser.html#1321" class="Function">eof</a>
+  <a id="8083" class="Symbol">;</a> <a id="8085" href="Effects.Parser.html#1432" class="Function">any-char</a>
+  <a id="8096" class="Symbol">;</a> <a id="8098" href="Effects.Parser.html#1692" class="Function">char</a>
+  <a id="8105" class="Symbol">)</a>
+
+<a id="8108" class="Keyword">import</a> <a id="8115" href="Effects.Parser.html" class="Module">Effects.Parser</a>
+  <a id="8132" class="Keyword">using</a>
+  <a id="8140" class="Symbol">(</a> <a id="8142" href="Effects.Parser.html#2279" class="Function">put</a>
+  <a id="8148" class="Symbol">;</a> <a id="8150" href="Effects.Parser.html#2481" class="Function Operator">_&lt;|&gt;_</a>
+  <a id="8158" class="Symbol">)</a>
+
+<a id="8161" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="8242" class="Comment">-- Combining Laws</a>
+<a id="8260" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="8342" class="Comment">-- NonDet Laws</a>
+
+<a id="8358" class="Keyword">open</a> <a id="8363" href="Effects.NonDet.html#1383" class="Module">Effects.NonDet.Synt</a>
+  <a id="8385" class="Keyword">using</a>
+  <a id="8393" class="Symbol">(</a> <a id="8395" href="Effects.NonDet.html#3782" class="Function">Eqns</a>
+  <a id="8402" class="Symbol">)</a>
+
+<a id="8405" class="Comment">-- &lt;|&gt;-assoc</a>
+
+<a id="8419" class="Keyword">import</a> <a id="8426" href="Effects.NonDet.html" class="Module">Effects.NonDet</a>
+  <a id="8443" class="Keyword">using</a>
+  <a id="8451" class="Symbol">(</a> <a id="8453" href="Effects.NonDet.html#6206" class="Function">&lt;|&gt;-assoc</a>
+  <a id="8465" class="Symbol">)</a>
+
+<a id="8468" class="Comment">-- Commutativity Law</a>
+
+<a id="8490" class="Keyword">import</a> <a id="8497" href="FreeMonad.Combinations.LiftLess.Tensor.html" class="Module">FreeMonad.Combinations.LiftLess.Tensor</a>
+  <a id="8538" class="Keyword">using</a>
+  <a id="8546" class="Symbol">(</a> <a id="8548" href="FreeMonad.Combinations.LiftLess.Tensor.html#786" class="Function">commutative</a>
+  <a id="8562" class="Symbol">)</a>
+
+<a id="8565" class="Comment">-- Op constructor</a>
+
+<a id="8584" class="Keyword">import</a> <a id="8591" href="FreeMonad.Syntax.html" class="Module">FreeMonad.Syntax</a>
+  <a id="8610" class="Keyword">using</a>
+  <a id="8618" class="Symbol">(</a> <a id="8620" href="FreeMonad.Syntax.html#516" class="Function Operator">Op⟦_⟧</a>
+  <a id="8628" class="Symbol">)</a>
+
+<a id="8631" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="8712" class="Comment">-- Interpreting into Models</a>
+<a id="8740" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="8822" class="Comment">-- toState, runState</a>
+
+<a id="8844" class="Keyword">import</a> <a id="8851" href="Effects.State.html" class="Module">Effects.State</a>
+  <a id="8867" class="Keyword">using</a>
+  <a id="8875" class="Symbol">(</a> <a id="8877" href="Effects.State.html#5448" class="Function">toState</a>
+  <a id="8887" class="Symbol">;</a> <a id="8889" href="Effects.State.html#6174" class="Function">runState</a>
+  <a id="8900" class="Symbol">)</a>
+
+<a id="8903" class="Comment">-- State Transformer Iso</a>
+
+<a id="8929" class="Keyword">import</a> <a id="8936" href="Effects.State.Tensor.html" class="Module">Effects.State.Tensor</a>
+  <a id="8959" class="Keyword">using</a>
+  <a id="8967" class="Symbol">(</a> <a id="8969" href="Effects.State.Tensor.html#5235" class="Function">stateT-iso</a>
+  <a id="8982" class="Symbol">)</a>
+
+<a id="8985" class="Comment">--==============================================================================</a>
+<a id="9066" class="Comment">-- Section 6: An Effect-Generic Hoare Logic</a>
+<a id="9110" class="Comment">--==============================================================================</a>
+
+<a id="9192" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="9273" class="Comment">-- Truth Values</a>
+<a id="9289" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="9371" class="Comment">-- Ω</a>
+
+<a id="9377" class="Keyword">import</a> <a id="9384" href="Truth.html" class="Module">Truth</a>
+  <a id="9392" class="Keyword">using</a>
+  <a id="9400" class="Symbol">(</a> <a id="9402" href="Truth.html#1037" class="Record">Ω</a>
+  <a id="9406" class="Symbol">;</a> <a id="9408" class="Keyword">module</a> <a id="9415" href="Truth.html#2158" class="Module">LevelZero</a>
+  <a id="9427" class="Symbol">)</a>
+
+<a id="9430" class="Comment">-- 3 is even</a>
+
+<a id="9444" class="Keyword">open</a> <a id="9449" href="Truth.html#2158" class="Module">Truth.LevelZero</a>
+  <a id="9467" class="Keyword">using</a>
+  <a id="9475" class="Symbol">(</a> <a id="9477" href="Truth.html#2505" class="Function">3-is-even</a>
+  <a id="9489" class="Symbol">;</a> <a id="9491" href="Truth.html#2637" class="Function">3-is-not-even</a>
+  <a id="9507" class="Symbol">;</a> <a id="9509" href="Truth.html#2428" class="Function">1≢0</a>
+  <a id="9515" class="Symbol">)</a>
+
+<a id="9518" class="Comment">-- Truth Combinators</a>
+
+<a id="9540" class="Keyword">import</a> <a id="9547" href="Truth.html" class="Module">Truth</a>
+  <a id="9555" class="Keyword">using</a>
+  <a id="9563" class="Symbol">(</a> <a id="9565" href="Truth.html#1742" class="Function Operator">_iff_</a>
+  <a id="9573" class="Symbol">;</a> <a id="9575" href="Truth.html#2775" class="Function">False</a>
+  <a id="9583" class="Symbol">;</a> <a id="9585" href="Truth.html#1174" class="Function">True</a>
+  <a id="9592" class="Symbol">;</a> <a id="9594" href="Truth.html#4373" class="Function Operator">_|∧|_</a>
+  <a id="9602" class="Symbol">;</a> <a id="9604" href="Truth.html#4459" class="Function Operator">_|→|_</a>
+  <a id="9612" class="Symbol">;</a> <a id="9614" href="Truth.html#4416" class="Function Operator">_|∨|_</a>
+  <a id="9622" class="Symbol">)</a>
+
+<a id="9625" class="Comment">-- Propositional Truncation</a>
+
+<a id="9654" class="Keyword">import</a> <a id="9661" href="Examples.Quotients.html" class="Module">Examples.Quotients</a>
+  <a id="9682" class="Keyword">using</a>
+  <a id="9690" class="Symbol">(</a> <a id="9692" href="Examples.Quotients.html#1191" class="Function Operator">∥_∥</a>
+  <a id="9698" class="Symbol">)</a>
+
+<a id="9701" class="Comment">-- Truth Equality</a>
+
+<a id="9720" class="Keyword">import</a> <a id="9727" href="Truth.html" class="Module">Truth</a>
+  <a id="9735" class="Keyword">using</a>
+  <a id="9743" class="Symbol">(</a> <a id="9745" href="Truth.html#5548" class="Function Operator">_|≡|_</a>
+  <a id="9753" class="Symbol">)</a>
+
+<a id="9756" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="9837" class="Comment">-- Assertions</a>
+<a id="9851" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="9933" class="Comment">-- no-input encodings</a>
+
+<a id="9956" class="Keyword">import</a> <a id="9963" href="Effects.Parser.html" class="Module">Effects.Parser</a>
+  <a id="9980" class="Keyword">using</a>
+  <a id="9988" class="Symbol">(</a> <a id="9990" class="Keyword">module</a> <a id="9997" href="Effects.Parser.html#5150" class="Module">NoInpAssertion</a>
+  <a id="10014" class="Symbol">;</a> <a id="10016" class="Keyword">module</a> <a id="10023" href="Effects.Parser.html#5371" class="Module">NoInpG</a>
+  <a id="10032" class="Symbol">)</a>
+
+<a id="10035" class="Keyword">open</a> <a id="10040" href="Hoare.Definition.html#1739" class="Module">Hoare.Definition.DisplayGlobal</a>
+  <a id="10073" class="Keyword">using</a>
+  <a id="10081" class="Symbol">(</a> <a id="10083" href="Hoare.Definition.html#1954" class="Function">𝒢</a>
+  <a id="10087" class="Symbol">)</a>
+
+<a id="10090" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="10171" class="Comment">-- Pure Assertions</a>
+<a id="10190" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="10272" class="Keyword">import</a> <a id="10279" href="Hoare.Definition.html" class="Module">Hoare.Definition</a>
+  <a id="10298" class="Keyword">using</a>
+  <a id="10306" class="Symbol">(</a> <a id="10308" href="Hoare.Definition.html#1296" class="Function">SEF</a>
+  <a id="10314" class="Symbol">;</a> <a id="10316" href="Hoare.Definition.html#1380" class="Function">DET</a>
+  <a id="10322" class="Symbol">)</a>
+
+<a id="10325" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="10406" class="Comment">-- Hoare Triples</a>
+<a id="10423" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="10505" class="Keyword">import</a> <a id="10512" href="Hoare.Definition.html" class="Module">Hoare.Definition</a>
+  <a id="10531" class="Keyword">using</a>
+  <a id="10539" class="Symbol">(</a> <a id="10541" href="Hoare.Definition.html#2354" class="Function">hoare-def-explicit</a> <a id="10560" class="Comment">-- Encoding displayed in paper</a>
+  <a id="10593" class="Symbol">;</a> <a id="10595" href="Hoare.Definition.html#3578" class="Record">Hoare</a>              <a id="10614" class="Comment">-- Actual encoding, equivalent</a>
+  <a id="10647" class="Symbol">)</a>
+
+<a id="10650" class="Comment">-- Remaining and no-input</a>
+
+<a id="10677" class="Keyword">import</a> <a id="10684" href="Effects.Parser.html" class="Module">Effects.Parser</a>
+  <a id="10701" class="Keyword">using</a>
+  <a id="10709" class="Symbol">(</a> <a id="10711" href="Effects.Parser.html#5575" class="Function">remaining</a>
+  <a id="10723" class="Symbol">;</a> <a id="10725" href="Effects.Parser.html#5720" class="Function">no-input</a>
+  <a id="10736" class="Symbol">)</a>
+
+<a id="10739" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="10820" class="Comment">-- Connectives on Assertions</a>
+<a id="10849" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="10931" class="Keyword">import</a> <a id="10938" href="Hoare.Calculus.html" class="Module">Hoare.Calculus</a>
+  <a id="10955" class="Keyword">using</a>
+  <a id="10963" class="Symbol">(</a> <a id="10965" href="Hoare.Calculus.html#19288" class="Function">conj</a>
+  <a id="10972" class="Symbol">)</a>
+
+<a id="10975" class="Comment">--------------------------------------------------------------------------------</a>
+<a id="11056" class="Comment">-- Using Hoare Logic</a>
+<a id="11077" class="Comment">--------------------------------------------------------------------------------</a>
+
+<a id="11159" class="Comment">-- Hoare valued predicate on parser</a>
+
+<a id="11196" class="Keyword">import</a> <a id="11203" href="Effects.Parser.html" class="Module">Effects.Parser</a>
+  <a id="11220" class="Keyword">using</a>
+  <a id="11228" class="Symbol">(</a> <a id="11230" href="Effects.Parser.html#5872" class="Function Operator">_∈_↦_</a>
+  <a id="11238" class="Symbol">)</a>
+
+<a id="11241" class="Comment">-- round-trip</a>
+
+<a id="11256" class="Keyword">import</a> <a id="11263" href="Effects.Parser.TreeParser.html" class="Module">Effects.Parser.TreeParser</a>
+  <a id="11291" class="Keyword">using</a>
+  <a id="11299" class="Symbol">(</a> <a id="11301" href="Effects.Parser.TreeParser.html#9895" class="Function">round-trip</a>
+  <a id="11314" class="Symbol">)</a>
+
+<a id="11317" class="Comment">-- lemmas used to prove</a>
+
+<a id="11342" class="Keyword">import</a> <a id="11349" href="Effects.Parser.html" class="Module">Effects.Parser</a>
+  <a id="11366" class="Keyword">using</a>
+  <a id="11374" class="Symbol">(</a> <a id="11376" href="Effects.Parser.html#4642" class="Function">fail-anything</a>
+  <a id="11392" class="Symbol">;</a> <a id="11394" href="Effects.Parser.html#4928" class="Function Operator">_⟨&lt;|&gt;⟩_</a>
+  <a id="11404" class="Symbol">;</a> <a id="11406" href="Effects.Parser.html#10470" class="Function">parse-char</a>
+  <a id="11419" class="Symbol">)</a>
+
+<a id="11422" class="Comment">-- Using H-Elim on the Parser</a>
+
+<a id="11453" class="Keyword">import</a> <a id="11460" href="Effects.Parser.HElim.html" class="Module">Effects.Parser.HElim</a>
+  <a id="11483" class="Keyword">using</a>
+  <a id="11491" class="Symbol">(</a> <a id="11493" href="Effects.Parser.HElim.html#4109" class="Function">Total</a>
+  <a id="11501" class="Symbol">;</a> <a id="11503" href="Effects.Parser.HElim.html#5403" class="Function">parse-equality</a>
+  <a id="11520" class="Symbol">;</a> <a id="11522" href="Effects.Parser.HElim.html#7867" class="Function">push-print-parse</a>
+  <a id="11541" class="Symbol">)</a>
+
+<a id="11544" class="Comment">--==============================================================================</a>
+<a id="11625" class="Comment">-- Section 7: Relating Hoare-Style and Equational Reasoning</a>
+<a id="11685" class="Comment">--==============================================================================</a>
+
+<a id="11767" class="Keyword">import</a> <a id="11774" href="Hoare.Definition.html" class="Module">Hoare.Definition</a>
+  <a id="11793" class="Keyword">using</a>
+  <a id="11801" class="Symbol">(</a> <a id="11803" href="Hoare.Definition.html#2354" class="Function">hoare-def-explicit</a>
+  <a id="11824" class="Symbol">)</a>
+
+<a id="11827" class="Comment">-- Theorem 7.1 (H-Elim)</a>
+
+<a id="11852" class="Keyword">import</a> <a id="11859" href="Hoare.HElim.html" class="Module">Hoare.HElim</a>
+  <a id="11873" class="Keyword">using</a>
+  <a id="11881" class="Symbol">(</a> <a id="11883" href="Hoare.HElim.html#993" class="Function">H-elim</a>
+  <a id="11892" class="Symbol">)</a>
+
+<a id="11895" class="Comment">-- Classical proof of H-elim</a>
+
+<a id="11925" class="Keyword">import</a> <a id="11932" href="Hoare.Boolean.html" class="Module">Hoare.Boolean</a>
+  <a id="11948" class="Keyword">using</a>
+  <a id="11956" class="Symbol">(</a> <a id="11958" href="Hoare.Boolean.html#884" class="Function">ℋ-elim</a>
+  <a id="11967" class="Symbol">)</a>
+
+<a id="11970" class="Comment">-- Provenance</a>
+
+<a id="11985" class="Keyword">import</a> <a id="11992" href="FreeMonad.HElim.html" class="Module">FreeMonad.HElim</a>
+  <a id="12010" class="Keyword">using</a>
+  <a id="12018" class="Symbol">(</a> <a id="12020" href="FreeMonad.HElim.html#1277" class="Record">Provenance</a>
+  <a id="12033" class="Symbol">)</a>
+
+<a id="12036" class="Comment">-- Lemma 7.2</a>
+
+<a id="12050" class="Keyword">import</a> <a id="12057" href="FreeMonad.HElim.html" class="Module">FreeMonad.HElim</a>
+  <a id="12075" class="Keyword">using</a>
+  <a id="12083" class="Symbol">(</a> <a id="12085" href="FreeMonad.HElim.html#6724" class="Function">derive</a>
+  <a id="12094" class="Symbol">)</a>
+
+<a id="12097" class="Comment">-- Pushouts</a>
+
+<a id="12110" class="Keyword">import</a> <a id="12117" href="Examples.Pushout.html" class="Module">Examples.Pushout</a>
+   <a id="12137" class="Keyword">using</a>
+   <a id="12146" class="Symbol">(</a> <a id="12148" href="Examples.Pushout.html#162" class="Datatype">Pushout</a>
+   <a id="12159" class="Symbol">)</a>
+
+<a id="12162" class="Comment">-- Lemma 7.3</a>
+
+<a id="12176" class="Keyword">import</a> <a id="12183" href="HITs.Pushout.Properties.html" class="Module">HITs.Pushout.Properties</a>
+  <a id="12209" class="Keyword">using</a>
+  <a id="12217" class="Symbol">(</a> <a id="12219" href="HITs.Pushout.Properties.html#6877" class="Function">fin-disc-pushout</a>
+  <a id="12238" class="Symbol">;</a> <a id="12240" href="HITs.Pushout.Properties.html#762" class="Function Operator">_≈*_</a>
+  <a id="12247" class="Symbol">;</a> <a id="12249" href="HITs.Pushout.Properties.html#5159" class="Function">Loopless</a>
+  <a id="12260" class="Symbol">;</a> <a id="12262" href="HITs.Pushout.Properties.html#5932" class="Function">deloop</a>
+  <a id="12271" class="Symbol">)</a>
+
+<a id="12274" class="Comment">-- Proof Sketch</a>
+
+<a id="12291" class="Keyword">import</a> <a id="12298" href="FreeMonad.HElim.html" class="Module">FreeMonad.HElim</a>
+  <a id="12316" class="Keyword">using</a>
+  <a id="12324" class="Symbol">(</a> <a id="12326" href="FreeMonad.HElim.html#11942" class="Function">𝒢-elim</a>
+  <a id="12335" class="Symbol">)</a>
+</pre></body></html>

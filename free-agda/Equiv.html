@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Equiv</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">module</a> <a id="32" href="Equiv.html" class="Module">Equiv</a> <a id="38" class="Keyword">where</a>
+
+<a id="45" class="Keyword">open</a> <a id="50" class="Keyword">import</a> <a id="57" href="Cubical.Foundations.Equiv.html" class="Module">Cubical.Foundations.Equiv</a>
+  <a id="85" class="Keyword">using</a>
+    <a id="95" class="Symbol">(</a> <a id="97" href="Agda.Builtin.Cubical.Glue.html#1051" class="Function Operator">_≃_</a>
+    <a id="105" class="Symbol">;</a> <a id="107" href="Agda.Builtin.Cubical.Glue.html#971" class="Field">equiv-proof</a>
+    <a id="123" class="Symbol">;</a> <a id="125" href="Agda.Builtin.Cubical.Glue.html#868" class="Record">isEquiv</a>
+    <a id="137" class="Symbol">;</a> <a id="139" href="Cubical.Foundations.Equiv.html#3128" class="Function">equivToIso</a>
+    <a id="154" class="Symbol">)</a>
+  <a id="158" class="Keyword">renaming</a>
+    <a id="171" class="Symbol">(</a> <a id="173" href="Cubical.Foundations.Equiv.html#3571" class="Function">compEquiv</a> <a id="183" class="Symbol">to</a> <a id="186" class="Function">≃-trans</a>
+    <a id="198" class="Symbol">;</a> <a id="200" href="Cubical.Foundations.Equiv.html#3397" class="Function">invEquiv</a>  <a id="210" class="Symbol">to</a> <a id="213" class="Function">≃-sym</a>
+    <a id="223" class="Symbol">)</a>
+  <a id="227" class="Keyword">public</a>
+<a id="234" class="Keyword">open</a> <a id="239" class="Keyword">import</a> <a id="246" href="Cubical.Foundations.Everything.html" class="Module">Cubical.Foundations.Everything</a>
+  <a id="279" class="Keyword">using</a> <a id="285" class="Symbol">(</a><a id="286" href="Cubical.Foundations.Univalence.html#944" class="Function">ua</a><a id="288" class="Symbol">)</a>
+  <a id="292" class="Keyword">public</a>
+</pre></body></html>

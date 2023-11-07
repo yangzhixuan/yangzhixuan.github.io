@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Level.Literals</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">module</a> <a id="32" href="Level.Literals.html" class="Module">Level.Literals</a> <a id="47" class="Keyword">where</a>
+
+<a id="54" class="Keyword">open</a> <a id="59" class="Keyword">import</a> <a id="66" href="Level.html" class="Module">Level</a>
+<a id="72" class="Keyword">open</a> <a id="77" class="Keyword">import</a> <a id="84" href="Literals.Number.html" class="Module">Literals.Number</a>
+<a id="100" class="Keyword">open</a> <a id="105" class="Keyword">import</a> <a id="112" href="Data.Nat.html" class="Module">Data.Nat</a>
+<a id="121" class="Keyword">open</a> <a id="126" class="Keyword">import</a> <a id="133" href="Data.Unit.html" class="Module">Data.Unit</a>
+
+<a id="Levelfromℕ"></a><a id="144" href="Level.Literals.html#144" class="Function">Levelfromℕ</a> <a id="155" class="Symbol">:</a> <a id="157" href="Agda.Builtin.Nat.html#192" class="Datatype">ℕ</a> <a id="159" class="Symbol">→</a> <a id="161" href="Agda.Primitive.html#597" class="Postulate">Level</a>
+<a id="167" href="Level.Literals.html#144" class="Function">Levelfromℕ</a> <a id="178" href="Agda.Builtin.Nat.html#210" class="InductiveConstructor">zero</a>    <a id="186" class="Symbol">=</a> <a id="188" href="Agda.Primitive.html#764" class="Primitive">ℓzero</a>
+<a id="194" href="Level.Literals.html#144" class="Function">Levelfromℕ</a> <a id="205" class="Symbol">(</a><a id="206" href="Agda.Builtin.Nat.html#223" class="InductiveConstructor">suc</a> <a id="210" href="Level.Literals.html#210" class="Bound">n</a><a id="211" class="Symbol">)</a> <a id="213" class="Symbol">=</a> <a id="215" href="Agda.Primitive.html#780" class="Primitive">ℓsuc</a> <a id="220" class="Symbol">(</a><a id="221" href="Level.Literals.html#144" class="Function">Levelfromℕ</a> <a id="232" href="Level.Literals.html#210" class="Bound">n</a><a id="233" class="Symbol">)</a>
+
+<a id="236" class="Keyword">instance</a>
+  <a id="numberLevel"></a><a id="247" href="Level.Literals.html#247" class="Function">numberLevel</a> <a id="259" class="Symbol">:</a> <a id="261" href="Agda.Builtin.FromNat.html#197" class="Record">Number</a> <a id="268" href="Agda.Primitive.html#597" class="Postulate">Level</a>
+  <a id="276" href="Level.Literals.html#247" class="Function">numberLevel</a> <a id="288" class="Symbol">=</a> <a id="290" class="Keyword">record</a>
+    <a id="301" class="Symbol">{</a> <a id="303" href="Agda.Builtin.FromNat.html#253" class="Field">Constraint</a> <a id="314" class="Symbol">=</a> <a id="316" class="Symbol">λ</a> <a id="318" href="Level.Literals.html#318" class="Bound">_</a> <a id="320" class="Symbol">→</a> <a id="322" href="Agda.Builtin.Unit.html#164" class="Record">⊤</a>
+    <a id="328" class="Symbol">;</a> <a id="330" href="Agda.Builtin.FromNat.html#282" class="Field">fromNat</a>    <a id="341" class="Symbol">=</a> <a id="343" class="Symbol">λ</a> <a id="345" href="Level.Literals.html#345" class="Bound">n</a> <a id="347" class="Symbol">→</a> <a id="349" href="Level.Literals.html#144" class="Function">Levelfromℕ</a> <a id="360" href="Level.Literals.html#345" class="Bound">n</a>
+    <a id="366" class="Symbol">}</a>
+</pre></body></html>
