@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Data.Empty</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">module</a> <a id="32" href="Data.Empty.html" class="Module">Data.Empty</a> <a id="43" class="Keyword">where</a>
+
+<a id="50" class="Keyword">open</a> <a id="55" class="Keyword">import</a> <a id="62" href="Level.html" class="Module">Level</a>
+<a id="68" class="Keyword">open</a> <a id="73" class="Keyword">import</a> <a id="80" href="Cubical.Data.Empty.html" class="Module">Cubical.Data.Empty</a> <a id="99" class="Keyword">using</a> <a id="105" class="Symbol">(</a><a id="106" href="Cubical.Data.Empty.Base.html#178" class="Datatype">⊥</a><a id="107" class="Symbol">)</a> <a id="109" class="Keyword">public</a>
+
+<a id="117" class="Keyword">infixr</a> <a id="124" class="Number">5</a> <a id="126" href="Data.Empty.html#129" class="Function Operator">¬_</a>
+<a id="¬_"></a><a id="129" href="Data.Empty.html#129" class="Function Operator">¬_</a> <a id="132" class="Symbol">:</a> <a id="134" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="139" href="Level.html#254" class="Generalizable">a</a> <a id="141" class="Symbol">→</a> <a id="143" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="148" href="Level.html#254" class="Generalizable">a</a>
+<a id="150" href="Data.Empty.html#129" class="Function Operator">¬</a> <a id="152" href="Data.Empty.html#152" class="Bound">A</a> <a id="154" class="Symbol">=</a> <a id="156" href="Data.Empty.html#152" class="Bound">A</a> <a id="158" class="Symbol">→</a> <a id="160" href="Cubical.Data.Empty.Base.html#178" class="Datatype">⊥</a>
+
+<a id="absurd"></a><a id="163" href="Data.Empty.html#163" class="Function">absurd</a> <a id="170" class="Symbol">:</a> <a id="172" class="Symbol">∀</a> <a id="174" class="Symbol">{</a><a id="175" href="Data.Empty.html#175" class="Bound">A</a> <a id="177" class="Symbol">:</a> <a id="179" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="184" href="Level.html#254" class="Generalizable">a</a><a id="185" class="Symbol">}</a> <a id="187" class="Symbol">→</a> <a id="189" href="Cubical.Data.Empty.Base.html#178" class="Datatype">⊥</a> <a id="191" class="Symbol">→</a> <a id="193" href="Data.Empty.html#175" class="Bound">A</a>
+<a id="195" href="Data.Empty.html#163" class="Function">absurd</a> <a id="202" class="Symbol">()</a>
+</pre></body></html>

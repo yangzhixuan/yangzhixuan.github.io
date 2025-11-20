@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Level</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">module</a> <a id="32" href="Level.html" class="Module">Level</a> <a id="38" class="Keyword">where</a>
+
+<a id="45" class="Keyword">open</a> <a id="50" class="Keyword">import</a> <a id="57" href="Agda.Primitive.html" class="Module">Agda.Primitive</a>
+  <a id="74" class="Keyword">using</a> <a id="80" class="Symbol">(</a><a id="81" href="Agda.Primitive.html#597" class="Postulate">Level</a><a id="86" class="Symbol">)</a>
+  <a id="90" class="Keyword">renaming</a> <a id="99" class="Symbol">(</a> <a id="101" href="Agda.Primitive.html#810" class="Primitive Operator">_⊔_</a> <a id="105" class="Symbol">to</a> <a id="108" class="Primitive Operator">_ℓ⊔_</a>
+           <a id="124" class="Symbol">;</a> <a id="126" href="Agda.Primitive.html#764" class="Primitive">lzero</a> <a id="132" class="Symbol">to</a> <a id="135" class="Primitive">ℓzero</a>
+           <a id="152" class="Symbol">;</a> <a id="154" href="Agda.Primitive.html#780" class="Primitive">lsuc</a>  <a id="160" class="Symbol">to</a> <a id="163" class="Primitive">ℓsuc</a>
+           <a id="179" class="Symbol">;</a> <a id="181" href="Agda.Primitive.html#326" class="Primitive">Set</a> <a id="185" class="Symbol">to</a> <a id="188" class="Primitive">Type</a>
+           <a id="204" class="Symbol">;</a> <a id="206" href="Agda.Primitive.html#381" class="Primitive">Setω</a> <a id="211" class="Symbol">to</a> <a id="214" class="Primitive">Typeω</a>
+           <a id="231" class="Symbol">)</a>
+  <a id="235" class="Keyword">public</a>
+
+<a id="243" class="Keyword">variable</a>
+  <a id="254" href="Level.html#254" class="Generalizable">a</a> <a id="256" href="Level.html#256" class="Generalizable">b</a> <a id="258" href="Level.html#258" class="Generalizable">c</a> <a id="260" class="Symbol">:</a> <a id="262" href="Agda.Primitive.html#597" class="Postulate">Level</a>
+  <a id="270" href="Level.html#270" class="Generalizable">A</a>  <a id="273" class="Symbol">:</a> <a id="275" href="Level.html#188" class="Primitive">Type</a> <a id="280" href="Level.html#254" class="Generalizable">a</a>
+  <a id="284" href="Level.html#284" class="Generalizable">B</a>  <a id="287" class="Symbol">:</a> <a id="289" href="Level.html#188" class="Primitive">Type</a> <a id="294" href="Level.html#256" class="Generalizable">b</a>
+  <a id="298" href="Level.html#298" class="Generalizable">C</a>  <a id="301" class="Symbol">:</a> <a id="303" href="Level.html#188" class="Primitive">Type</a> <a id="308" href="Level.html#258" class="Generalizable">c</a>
+  <a id="312" href="Level.html#312" class="Generalizable">p</a> <a id="314" class="Symbol">:</a> <a id="316" href="Agda.Primitive.html#597" class="Postulate">Level</a>
+  <a id="324" href="Level.html#324" class="Generalizable">P</a> <a id="326" class="Symbol">:</a> <a id="328" href="Level.html#270" class="Generalizable">A</a> <a id="330" class="Symbol">→</a> <a id="332" href="Level.html#188" class="Primitive">Type</a> <a id="337" href="Level.html#312" class="Generalizable">p</a>
+
+<a id="Type-"></a><a id="340" href="Level.html#340" class="Function">Type-</a> <a id="346" class="Symbol">:</a> <a id="348" class="Symbol">∀</a> <a id="350" class="Symbol">{</a><a id="351" href="Level.html#351" class="Bound">ℓ</a><a id="352" class="Symbol">}</a> <a id="354" class="Symbol">→</a> <a id="356" href="Level.html#188" class="Primitive">Type</a> <a id="361" class="Symbol">(</a><a id="362" href="Level.html#163" class="Primitive">ℓsuc</a> <a id="367" href="Level.html#351" class="Bound">ℓ</a><a id="368" class="Symbol">)</a>
+<a id="370" href="Level.html#340" class="Function">Type-</a> <a id="376" class="Symbol">{</a><a id="377" href="Level.html#377" class="Bound">ℓ</a><a id="378" class="Symbol">}</a> <a id="380" class="Symbol">=</a> <a id="382" href="Level.html#188" class="Primitive">Type</a> <a id="387" href="Level.html#377" class="Bound">ℓ</a>
+</pre></body></html>

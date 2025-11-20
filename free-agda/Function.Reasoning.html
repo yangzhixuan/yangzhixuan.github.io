@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Function.Reasoning</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">module</a> <a id="32" href="Function.Reasoning.html" class="Module">Function.Reasoning</a> <a id="51" class="Keyword">where</a>
+
+<a id="58" class="Keyword">open</a> <a id="63" class="Keyword">import</a> <a id="70" href="Level.html" class="Module">Level</a>
+
+<a id="77" class="Keyword">infixl</a> <a id="84" class="Number">0</a> <a id="86" href="Function.Reasoning.html#98" class="Function">⇒⟨∙⟩-syntax</a>
+<a id="⇒⟨∙⟩-syntax"></a><a id="98" href="Function.Reasoning.html#98" class="Function">⇒⟨∙⟩-syntax</a> <a id="110" class="Symbol">:</a> <a id="112" class="Symbol">{</a><a id="113" href="Function.Reasoning.html#113" class="Bound">A</a> <a id="115" class="Symbol">:</a> <a id="117" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="122" href="Level.html#254" class="Generalizable">a</a><a id="123" class="Symbol">}</a> <a id="125" class="Symbol">(</a><a id="126" href="Function.Reasoning.html#126" class="Bound">B</a> <a id="128" class="Symbol">:</a> <a id="130" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="135" href="Level.html#256" class="Generalizable">b</a><a id="136" class="Symbol">)</a> <a id="138" class="Symbol">→</a> <a id="140" href="Function.Reasoning.html#113" class="Bound">A</a> <a id="142" class="Symbol">→</a> <a id="144" class="Symbol">(</a><a id="145" href="Function.Reasoning.html#113" class="Bound">A</a> <a id="147" class="Symbol">→</a> <a id="149" href="Function.Reasoning.html#126" class="Bound">B</a><a id="150" class="Symbol">)</a> <a id="152" class="Symbol">→</a> <a id="154" href="Function.Reasoning.html#126" class="Bound">B</a>
+<a id="156" href="Function.Reasoning.html#98" class="Function">⇒⟨∙⟩-syntax</a> <a id="168" class="Symbol">_</a> <a id="170" href="Function.Reasoning.html#170" class="Bound">x</a> <a id="172" href="Function.Reasoning.html#172" class="Bound">f</a> <a id="174" class="Symbol">=</a> <a id="176" href="Function.Reasoning.html#172" class="Bound">f</a> <a id="178" href="Function.Reasoning.html#170" class="Bound">x</a>
+
+<a id="181" class="Keyword">syntax</a> <a id="188" href="Function.Reasoning.html#98" class="Function">⇒⟨∙⟩-syntax</a> <a id="200" class="Bound">A</a> <a id="202" class="Bound">x</a> <a id="204" class="Bound">f</a> <a id="206" class="Symbol">=</a> <a id="208" class="Bound">x</a> <a id="210" class="Function">⇒⟨</a> <a id="213" class="Bound">f</a> <a id="215" class="Function">⟩</a> <a id="217" class="Bound">A</a>
+
+<a id="220" class="Keyword">infixl</a> <a id="227" class="Number">0</a> <a id="229" href="Function.Reasoning.html#240" class="Function">⇒⟨⟩-syntax</a>
+<a id="⇒⟨⟩-syntax"></a><a id="240" href="Function.Reasoning.html#240" class="Function">⇒⟨⟩-syntax</a> <a id="251" class="Symbol">:</a> <a id="253" class="Symbol">(</a><a id="254" href="Function.Reasoning.html#254" class="Bound">A</a> <a id="256" class="Symbol">:</a> <a id="258" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="263" href="Level.html#254" class="Generalizable">a</a><a id="264" class="Symbol">)</a> <a id="266" class="Symbol">→</a> <a id="268" href="Function.Reasoning.html#254" class="Bound">A</a> <a id="270" class="Symbol">→</a> <a id="272" href="Function.Reasoning.html#254" class="Bound">A</a>
+<a id="274" href="Function.Reasoning.html#240" class="Function">⇒⟨⟩-syntax</a> <a id="285" class="Symbol">_</a> <a id="287" href="Function.Reasoning.html#287" class="Bound">x</a> <a id="289" class="Symbol">=</a> <a id="291" href="Function.Reasoning.html#287" class="Bound">x</a>
+
+<a id="294" class="Keyword">syntax</a> <a id="301" href="Function.Reasoning.html#240" class="Function">⇒⟨⟩-syntax</a> <a id="312" class="Bound">A</a> <a id="314" class="Bound">x</a> <a id="316" class="Symbol">=</a> <a id="318" class="Bound">x</a> <a id="320" class="Function">⇒⟨⟩</a> <a id="324" class="Bound">A</a>
+
+<a id="327" class="Comment">-- private module Examples where</a>
+<a id="360" class="Comment">--   open import Prelude</a>
+<a id="385" class="Comment">--   example : (x y : ℕ) → x ≡ y → suc (suc x) ≡ ℕ.suc (suc y)</a>
+<a id="448" class="Comment">--   example x y p =</a>
+<a id="469" class="Comment">--     p ⦂ x ≡ y                   ⇒⟨ cong suc ⟩</a>
+<a id="518" class="Comment">--     suc x ≡ suc y               ⇒⟨ cong suc ⟩</a>
+<a id="567" class="Comment">--     suc (suc x) ≡ suc (suc y)   ⇒⟨⟩</a>
+<a id="606" class="Comment">--     suc (suc x) ≡ suc (suc y)</a>
+</pre></body></html>

@@ -1,0 +1,135 @@
+<html lang="en" style="height: 100%;"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Sichuanese Mandarin</title>
+    <link href="css/impress-demo.css" rel="stylesheet">
+
+</head>
+<body class="impress-not-supported">
+    <div class="fallback-message">
+        <p>很遗憾本浏览器不支持impress.js，请使用<b>Google Chrome</b>等现代浏览器</p>
+    </div>
+
+    <div id="impress">
+        <div class="step" data-x="0" data-y="0">
+            <q>古今言殊，四方谈异。</q> 
+            <p style="float:right">——《论衡》王充</p>
+            <br>
+            <br>
+            <q>
+                汉语有<strong>官话</strong>，吴语，湘语，
+                闽语，粤语等等方言
+            </q>
+        </div>
+
+        <div class="step" data-x="1000" data-y="0" data-z="-1000" data-rotate="90" data-scale="1">
+            <q>
+                四川话 ⊆  西南官话 ⊆ 官话 
+            </q>
+            <br>
+            <p>
+                覆盖除非汉族聚居区的整个四川省和<strong>重庆市</strong>以及其他省周边地区，使用人口超过1.2亿人
+            </p>
+        </div>
+
+        <div class="step" data-x="0" data-y="1000" data-z="200" data-scale="3" data-rotate="0">
+            <p>
+                四川话中没有这些声母：<br>zh, ch, sh, n
+                <br>
+                但是多了声母：<br>[z] 人, [v] 五, [ŋ] 我
+            </p>
+        </div>
+
+        <div class="step" data-x="1000" data-y="1200" data-z="0" data-scale="2">
+            <p style="font-size:60%">
+            兰教练是女教练，吕教练是男教练。<br>
+            兰教练不是男教练，吕教练不是女教练。<br>
+            兰南是男篮主力，吕楠是女篮主力。<br>
+            吕教练在男篮训练兰楠，兰教练在女篮训练吕楠。
+            </p>
+            <img src="./angry.png" alt="">
+        </div>
+
+        <div class="step" data-x="1400" data-y="1000" data-z="500" data-scale="0.5" data-rotate-x="30" data-rotate-y="20">
+            <p>
+                四川话也没有韵母： 后鼻音ing, eng ... 
+                <br>
+                四川话 <b>特色</b> 韵母：yo 药，钥 ...
+            </p>
+        </div>
+
+        <div class="step" data-x="1600" data-y="1300" data-z="400" data-scale="0.5">
+            <p>
+            <strong>同字不同音：</strong> <br>
+            <b style="font-size:120%">街</b> 普通话jie1 四川话gai1 <br>
+            <b style="font-size:120%">鞋</b> 普通话xie2 四川话hai2 <br>
+            <b style="font-size:120%">脚</b> 普通话jiao3 四川话juo2 <br>
+            <b style="font-size:120%">常</b> 普通话chang2 四川话sang2 <br>
+            ... ... ...
+            </p>
+        </div>
+
+        <div class="step" data-x="1800" data-y="500" data-z="200" data-scale="1" data-rotate-y="-30">
+            <q>词汇</q>
+            <br>
+            <p>
+            巴适：好<br>
+            晓得：知道<br>
+            各人：自己 <br>
+            造孽：可怜<br>
+            𢭃：接，对碰，拼装<br>
+            ...
+            </p>
+        </div>
+
+        <div class="step" data-x="1800" data-y="200" data-scale="0.3">
+            <img src="./python.png" alt="">
+            <q>
+                 四川话：梭梭<br>
+                <span style="font-size:50%">*梭：滑动，爬动</span>
+            </q>
+        </div>
+
+        <div class="step" data-x="1800" data-y="0" data-scale="0.3">
+            <img src="./hammer.png" alt="">
+            <br>
+            <p style="font-size:50%">
+            <strong>锤子：</strong><br>
+            【名词】【副词】表否定、愤怒意<br>
+            【例句】1. 你在瞎讲个锤子啊！ 2. 这PPT介绍锤子地四川话啊！<br>
+            【同义词】铲铲/毛线/**
+            </p>
+        </div>
+
+        <div class="step" data-x="1600" data-y="0" data-z="-500" data-scale="0.3">
+            <p style="font-size:40%">
+            　　记者问公交车失火的幸存者：车上有锤子吗？<br>
+            　　幸存者：有个锤子！<br>
+            　　记者：有锤子？你们怎么不用来砸窗子呢？<br>
+            　　幸存者：莫得！有个锤子的锤子！<br>
+            　　记者：什么？还有两个锤子？<br>
+            　　幸存者：哎呀，有个铲铲！<br>
+            　　记者：铲子？那也可以用来砸窗啊！<br>
+            　　幸存者：砸个锤子的窗子！<br>
+            　　记者：是砸窗子不是砸锤子……<br>
+            　　幸存者：哎呀我跟你说个锤子！<br>
+            　　记者：我说的窗子！<br>
+            　　幸存者：锤子！<br>
+            　　记者：那车上到底有什么？<br>
+            　　幸存者：有个毛线！<br>
+            　　记者:哦，怪不得燃的这么快！<br>
+            </p>
+        </div>
+
+        <div class="step past" data-x="1000" data-y="1800" data-z="1000" data-rotate="180" data-scale="1">
+            <q> That's all! Thanks! </q>
+        </div>
+
+        <div id="overview" class="step" data-x="400" data-y="1000" data-scale="3.5" >
+        </div>
+
+    </div>
+    <script src="js/impress.js"></script>
+    <script>impress().init();</script>
+</body>
+</html>

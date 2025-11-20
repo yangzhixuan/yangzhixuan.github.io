@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Data.Empty.Properties</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--safe</a> <a id="20" class="Symbol">#-}</a>
+
+<a id="25" class="Keyword">module</a> <a id="32" href="Data.Empty.Properties.html" class="Module">Data.Empty.Properties</a> <a id="54" class="Keyword">where</a>
+
+<a id="61" class="Keyword">open</a> <a id="66" class="Keyword">import</a> <a id="73" href="Data.Empty.html" class="Module">Data.Empty</a>
+<a id="84" class="Keyword">open</a> <a id="89" class="Keyword">import</a> <a id="96" href="HLevels.html" class="Module">HLevels</a>
+<a id="104" class="Keyword">open</a> <a id="109" class="Keyword">import</a> <a id="116" href="Level.html" class="Module">Level</a>
+
+<a id="isProp⊥"></a><a id="123" href="Data.Empty.Properties.html#123" class="Function">isProp⊥</a> <a id="131" class="Symbol">:</a> <a id="133" href="Cubical.Foundations.Prelude.html#10265" class="Function">isProp</a> <a id="140" href="Cubical.Data.Empty.Base.html#178" class="Datatype">⊥</a>
+<a id="142" href="Data.Empty.Properties.html#123" class="Function">isProp⊥</a> <a id="150" class="Symbol">()</a>
+
+<a id="isProp¬"></a><a id="154" href="Data.Empty.Properties.html#154" class="Function">isProp¬</a> <a id="162" class="Symbol">:</a> <a id="164" href="Cubical.Foundations.Prelude.html#10265" class="Function">isProp</a> <a id="171" class="Symbol">(</a><a id="172" href="Data.Empty.html#129" class="Function Operator">¬</a> <a id="174" href="Level.html#270" class="Generalizable">A</a><a id="175" class="Symbol">)</a>
+<a id="177" href="Data.Empty.Properties.html#154" class="Function">isProp¬</a> <a id="185" class="Symbol">=</a> <a id="187" href="Cubical.Foundations.HLevels.html#16768" class="Function">isProp→</a> <a id="195" href="Data.Empty.Properties.html#123" class="Function">isProp⊥</a>
+</pre></body></html>

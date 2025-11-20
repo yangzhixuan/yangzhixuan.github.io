@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Examples.Syntax</title><link rel="stylesheet" href="Agda.css"></head><body><pre class="Agda"><a id="1" class="Markup">\begin{code}</a>
+<a id="14" class="Keyword">module</a> <a id="21" href="Examples.Syntax.html" class="Module">Examples.Syntax</a> <a id="37" class="Keyword">where</a>
+
+<a id="44" class="Keyword">open</a> <a id="49" class="Keyword">import</a> <a id="56" href="Prelude.html" class="Module">Prelude</a>
+<a id="64" class="Keyword">open</a> <a id="69" class="Keyword">import</a> <a id="76" href="Signatures.html" class="Module">Signatures</a>
+
+<a id="88" class="Keyword">private</a> <a id="96" class="Keyword">variable</a> <a id="105" href="Examples.Syntax.html#105" class="Generalizable">ℓ</a> <a id="107" class="Symbol">:</a> <a id="109" href="Agda.Primitive.html#597" class="Postulate">Level</a>
+
+<a id="116" class="Markup">\end{code}</a><a id="126" class="Background">
+%&lt;*syntax-def&gt;
+</a><a id="142" class="Markup">\begin{code}[number=syntax-def]</a>
+<a id="174" class="Keyword">data</a> <a id="Syntax"></a><a id="179" href="Examples.Syntax.html#179" class="Datatype">Syntax</a> <a id="186" class="Symbol">(</a><a id="187" href="Examples.Syntax.html#187" class="Bound">𝔽</a> <a id="189" class="Symbol">:</a> <a id="191" href="Signatures.html#348" class="Record">Signature</a><a id="200" class="Symbol">)</a> <a id="202" class="Symbol">(</a><a id="203" href="Examples.Syntax.html#203" class="Bound">ν</a> <a id="205" class="Symbol">:</a> <a id="207" href="Agda.Primitive.html#326" class="Primitive">Type</a><a id="211" class="Symbol">)</a> <a id="213" class="Symbol">:</a> <a id="215" href="Agda.Primitive.html#326" class="Primitive">Type</a> <a id="220" class="Keyword">where</a>
+  <a id="Syntax.var"></a><a id="228" href="Examples.Syntax.html#228" class="InductiveConstructor">var</a> <a id="232" class="Symbol">:</a> <a id="234" href="Examples.Syntax.html#203" class="Bound">ν</a>                  <a id="253" class="Symbol">→</a> <a id="255" href="Examples.Syntax.html#179" class="Datatype">Syntax</a> <a id="262" href="Examples.Syntax.html#187" class="Bound">𝔽</a> <a id="264" href="Examples.Syntax.html#203" class="Bound">ν</a>
+  <a id="Syntax.op"></a><a id="268" href="Examples.Syntax.html#268" class="InductiveConstructor">op</a> <a id="271" class="Symbol">:</a> <a id="273" href="Signatures.html#483" class="Function Operator">⟦</a> <a id="275" href="Examples.Syntax.html#187" class="Bound">𝔽</a> <a id="277" href="Signatures.html#483" class="Function Operator">⟧</a> <a id="279" class="Symbol">(</a><a id="280" href="Examples.Syntax.html#179" class="Datatype">Syntax</a> <a id="287" href="Examples.Syntax.html#187" class="Bound">𝔽</a> <a id="289" href="Examples.Syntax.html#203" class="Bound">ν</a><a id="290" class="Symbol">)</a>  <a id="293" class="Symbol">→</a> <a id="295" href="Examples.Syntax.html#179" class="Datatype">Syntax</a> <a id="302" href="Examples.Syntax.html#187" class="Bound">𝔽</a> <a id="304" href="Examples.Syntax.html#203" class="Bound">ν</a>
+<a id="306" class="Markup">\end{code}</a><a id="316" class="Background">
+%&lt;/syntax-def&gt;
+</a></pre></body></html>
