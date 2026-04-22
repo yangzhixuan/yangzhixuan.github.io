@@ -855,7 +855,7 @@ reflecting the context of the term `t` into a substitution and then reifying the
 Functional normalisation by evaluation
 --------------------------------------------------------------------------------
 
-I have been say that `wnf3 t` _evaluates_ a term into a semantic domain. However,
+I have been saying that `wnf3 t` _evaluates_ a term into a semantic domain. However,
 if we are pedant with terminology, we should only use the word the word
 'evaluate' if `wnf3` is computed compositionally (i.e. `wnf3` should be a fold
 of terms). Unfortunately, `wnf3` is not (at least, not on the nose) compositional
@@ -1020,7 +1020,7 @@ of `b` in the following term (assuming `b` has no free variables other than `x`,
 \x. \y. \z. b
 ```
 We will represent `x` as `0`, `y` as `1`, and `z` as `2`. In comparison, de Bruijn
-indices would represent `z` as `0`, `y` as `1 , and `x` as `2`. In this way,
+indices would represent `z` as `0`, `y` as `1`, and `x` as `2`. In this way,
 if `b` is a lambda abstraction, `b = \w. c`, in the context of `c`, the variables
 `x`, `y`, and `z` would still be `0`, `1`, and `2`. Shifting variables into the
 next level is `O(0)` (i.e. an no-op)! This kind of variable representation

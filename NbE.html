@@ -1048,7 +1048,7 @@ value.</p>
 <h1 data-number="9" id="functional-normalisation-by-evaluation"><span
 class="header-section-number">9</span> Functional normalisation by
 evaluation</h1>
-<p>I have been say that <code>wnf3 t</code> <em>evaluates</em> a term
+<p>I have been saying that <code>wnf3 t</code> <em>evaluates</em> a term
 into a semantic domain. However, if we are pedant with terminology, we
 should only use the word the word ‘evaluate’ if <code>wnf3</code> is
 computed compositionally (i.e. <code>wnf3</code> should be a fold of
@@ -1203,12 +1203,14 @@ in the context of <code>b</code> in the following term (assuming
 <p>We will represent <code>x</code> as <code>0</code>, <code>y</code> as
 <code>1</code>, and <code>z</code> as <code>2</code>. In comparison, de
 Bruijn indices would represent <code>z</code> as <code>0</code>,
-<code>y</code> as
-<code>1 , and</code>x<code>as</code>2<code>. In this way, if</code>b<code>is a lambda abstraction,</code>b
-= .
-c<code>, in the context of</code>c<code>, the variables</code>x<code>,</code>y<code>, and</code>z<code>would still be</code>0<code>,</code>1<code>, and</code>2<code>. Shifting variables into the next level is</code>O(0)`
-(i.e. an no-op)! This kind of variable representation is sometimes
-called de Bruijn <em>levels</em>.</p>
+<code>y</code> as <code>1</code>, and <code>x</code> as <code>2</code>.
+In this way, if <code>b</code> is a lambda abstraction,
+<code>b = \w. c</code>, in the context of <code>c</code>, the variables
+<code>x</code>, <code>y</code>, and <code>z</code> would still be
+<code>0</code>, <code>1</code>, and <code>2</code>. Shifting variables
+into the next level is <code>O(0)</code> (i.e. an no-op)! This kind of
+variable representation is sometimes called de Bruijn
+<em>levels</em>.</p>
 <p>Using this idea, we can optimise <code>nf3</code> by using de Bruijn
 levels (instead of de Bruijn indices) in our semantic domain. The input
 terms can still use de Bruijn indices as before, and we don’t need to
