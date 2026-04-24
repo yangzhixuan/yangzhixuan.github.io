@@ -259,9 +259,9 @@
 <h1 class="title">An Algorithmic Reconstruction of Normalisation by
 Evaluation</h1>
 <p class="author">Zhixuan Yang, the University of Exeter</p>
-<p class="date">Apr 22, 2026</p>
+<p class="date">Apr 23, 2026</p>
 </header>
-<p>In the past a few years, I spent quite a lot of time to learn the
+<p>In the past a few years, I spent quite a lot of time on learning the
 categorical glueing technique for proving properties of programming
 languages, in particular, the normalisation properties of type theories
 and programming languages (if you are interested in learning this as
@@ -340,7 +340,7 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a 
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ot">subst ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>subst (<span class="dt">Var</span> n)   x t <span class="ot">=</span> <span class="kw">if</span> x <span class="op">==</span> n <span class="kw">then</span> t <span class="kw">else</span> <span class="dt">Var</span> n</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>subst (<span class="dt">App</span> f a) x t <span class="ot">=</span> <span class="dt">App</span> (subst f x t) (subst a x t)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>subst (<span class="dt">Abs</span> b)   x t <span class="ot">=</span> <span class="dt">Abs</span> (subst b (x <span class="op">+</span> <span class="dv">1</span>) (shift <span class="dv">0</span> <span class="dv">1</span> t)) <span class="kw">where</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>subst (<span class="dt">Abs</span> b)   x t <span class="ot">=</span> <span class="dt">Abs</span> (subst b (x <span class="op">+</span> <span class="dv">1</span>) (shift <span class="dv">0</span> <span class="dv">1</span> t))</span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- `shift x i t` increments all variables in `t` that are `&gt;= x` by `i`.</span></span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="ot">shift ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
@@ -624,40 +624,60 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf1 f</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf1 a</span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Abs</span> b <span class="ot">-&gt;</span> wnf1 (beta b a&#39;)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Abs</span> b <span class="ot">-&gt;</span> wnf1 (betaL b a&#39;)</span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>       _ <span class="ot">-&gt;</span> <span class="dt">App</span> f&#39; a&#39;</span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>wnf1 t <span class="ot">=</span> t</span></code></pre></div>
 <p>Note that the variable <code>a'</code> is annotated with
 <code>~</code>, which makes <code>a'</code> lazily evaluated (if
 <code>b</code> doesn’t use its argument, <code>a' = wnf1 a</code> will
-not be computed).</p>
+not be computed). We also need to use a version of <code>beta</code>
+that is lazy in its second argument. Until someone designs ‘strictness
+polymorphism’ and implements it in GHC, we have no choice but to
+duplicate our <code>beta</code> and <code>subst</code> functions with a
+<code>~</code> annotation in the arugments that we’d like to be
+lazy:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ot">betaL ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>betaL b <span class="op">~</span>a <span class="ot">=</span> shift <span class="dv">0</span> (<span class="op">-</span><span class="dv">1</span>) (substL b <span class="dv">0</span> (shift <span class="dv">0</span> <span class="dv">1</span> a))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="ot">substL ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>substL (<span class="dt">Var</span> n)   x <span class="op">~</span>t <span class="ot">=</span> <span class="kw">if</span> x <span class="op">==</span> n <span class="kw">then</span> t <span class="kw">else</span> <span class="dt">Var</span> n</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>substL (<span class="dt">App</span> f a) x <span class="op">~</span>t <span class="ot">=</span> <span class="dt">App</span> (substL f x t) (substL a x t)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>substL (<span class="dt">Abs</span> b)   x <span class="op">~</span>t <span class="ot">=</span> <span class="dt">Abs</span> (substL b (x <span class="op">+</span> <span class="dv">1</span>) (shift <span class="dv">0</span> <span class="dv">1</span> t))</span></code></pre></div>
+<p>Just to check our laziness annotation is working as expected:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; betaL (Abs (Var 0)) undefined</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. x0</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; beta (Abs (Var 0)) undefined</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- Prelude.undefined</span></span></code></pre></div>
 <p>Our new function for full normalisation then uses <code>wnf1</code>
 to compute weak normal forms in the case of a function application:</p>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf1 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>nf1 (<span class="dt">Var</span> v) <span class="ot">=</span> <span class="dt">Var</span> v</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>nf1 (<span class="dt">Abs</span> b) <span class="ot">=</span> <span class="dt">Abs</span> (nf1 b)</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>nf1 (<span class="dt">App</span> f a) <span class="ot">=</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf1 f</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf1 a</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Abs</span> b <span class="ot">-&gt;</span> nf1 (beta b a&#39;)</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>       _ <span class="ot">-&gt;</span> <span class="dt">App</span> (reify1 f&#39;) (reify1 a&#39;)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf1 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>nf1 (<span class="dt">Var</span> v) <span class="ot">=</span> <span class="dt">Var</span> v</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>nf1 (<span class="dt">Abs</span> b) <span class="ot">=</span> <span class="dt">Abs</span> (nf1 b)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>nf1 (<span class="dt">App</span> f a) <span class="ot">=</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf1 f</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf1 a</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Abs</span> b <span class="ot">-&gt;</span> nf1 (betaL b a&#39;)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>       _ <span class="ot">-&gt;</span> <span class="dt">App</span> (reify1 f&#39;) (reify1 a&#39;)</span></code></pre></div>
 <p>When the weak normal form <code>f'</code> of the function is not a
 lambda abstraction, we need to turn the weak normal forms
 <code>f'</code> and <code>a'</code> into (full) normal forms. This is
 done by the following function that triggers normalisation under lambda
 abstractions:</p>
-<div class="sourceCode" id="cb14"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify1 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>reify1 (<span class="dt">Var</span> v) <span class="ot">=</span> <span class="dt">Var</span> v</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>reify1 (<span class="dt">Abs</span> b) <span class="ot">=</span> <span class="dt">Abs</span> (reify1 (wnf1 b))</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>reify1 (<span class="dt">App</span> f a) <span class="ot">=</span> <span class="dt">App</span> (reify1 f) (reify1 a)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify1 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>reify1 (<span class="dt">Var</span> v) <span class="ot">=</span> <span class="dt">Var</span> v</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>reify1 (<span class="dt">Abs</span> b) <span class="ot">=</span> <span class="dt">Abs</span> (reify1 (wnf1 b))</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>reify1 (<span class="dt">App</span> f a) <span class="ot">=</span> <span class="dt">App</span> (reify1 f) (reify1 a)</span></code></pre></div>
 <p>One thing to notice is that an alternative definition of
 <code>nf1</code> is simply:</p>
-<div class="sourceCode" id="cb15"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf1&#39; ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>nf1&#39; <span class="ot">=</span> reify1 <span class="op">.</span> wnf1</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf1&#39; ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>nf1&#39; <span class="ot">=</span> reify1 <span class="op">.</span> wnf1</span></code></pre></div>
 <p>The explicit definition <code>nf1</code> above is the fused version
 of these two functions composed together. The fused version
 <code>nf1</code> is slightly more efficient than <code>nf1'</code>
@@ -672,30 +692,30 @@ define normalisation as their composition.</p>
 <code>(\x. x expensiveTm) (\x. c0)</code> and let
 <code>expensiveTm</code> be the conjunction of a large number of Church
 Boolean values of truth.</p>
-<div class="sourceCode" id="cb16"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- A term that is expensive to normalise</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ot">expensiveTm ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>expensiveTm n <span class="ot">=</span> <span class="dt">Abs</span> (churchNum n <span class="ot">`App`</span> (cAnd <span class="ot">`App`</span> cTrue) <span class="ot">`App`</span> cTrue)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- Church encoding of Boolean values</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>cTrue,<span class="ot"> cFalse ::</span> <span class="dt">Tm</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>cTrue <span class="ot">=</span> <span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Var</span> <span class="dv">1</span>))</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>cFalse <span class="ot">=</span> <span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Var</span> <span class="dv">0</span>))</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- Conjunction of Boolean values</span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="ot">cAnd ::</span> <span class="dt">Tm</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>cAnd <span class="ot">=</span> <span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Var</span> <span class="dv">3</span> <span class="ot">`App`</span> (<span class="dt">Var</span> <span class="dv">2</span> <span class="ot">`App`</span> <span class="dt">Var</span> <span class="dv">1</span> <span class="ot">`App`</span> <span class="dt">Var</span> <span class="dv">0</span>) <span class="ot">`App`</span> <span class="dt">Var</span> <span class="dv">0</span>))))</span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="co">-- `churchNum n` is `cinc` applied to zero `n` times.</span></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="ot">churchNum ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>churchNum n <span class="ot">=</span> <span class="fu">foldr</span> (\_ r <span class="ot">-&gt;</span> cinc <span class="ot">`App`</span> r) c0 [<span class="dv">1</span> <span class="op">..</span> n]</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="co">-- This takes a lot of time to compute</span></span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf0 $ (Abs (Var 0 `App` expensiveTm 10000)) `App` Abs c0</span></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="co">-- This takes less than a second to compute on my machine</span></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf1 $ (Abs (Var 0 `App` expensiveTm 10000)) `App` Abs c0</span></span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x1</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- A term that is expensive to normalise</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ot">expensiveTm ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>expensiveTm n <span class="ot">=</span> <span class="dt">Abs</span> (churchNum n <span class="ot">`App`</span> (cAnd <span class="ot">`App`</span> cTrue) <span class="ot">`App`</span> cTrue)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- Church encoding of Boolean values</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>cTrue,<span class="ot"> cFalse ::</span> <span class="dt">Tm</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>cTrue <span class="ot">=</span> <span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Var</span> <span class="dv">1</span>))</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>cFalse <span class="ot">=</span> <span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Var</span> <span class="dv">0</span>))</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- Conjunction of Boolean values</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="ot">cAnd ::</span> <span class="dt">Tm</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>cAnd <span class="ot">=</span> <span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Abs</span> (<span class="dt">Var</span> <span class="dv">3</span> <span class="ot">`App`</span> (<span class="dt">Var</span> <span class="dv">2</span> <span class="ot">`App`</span> <span class="dt">Var</span> <span class="dv">1</span> <span class="ot">`App`</span> <span class="dt">Var</span> <span class="dv">0</span>) <span class="ot">`App`</span> <span class="dt">Var</span> <span class="dv">0</span>))))</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="co">-- `churchNum n` is `cinc` applied to zero `n` times.</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="ot">churchNum ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>churchNum n <span class="ot">=</span> <span class="fu">foldr</span> (\_ r <span class="ot">-&gt;</span> cinc <span class="ot">`App`</span> r) c0 [<span class="dv">1</span> <span class="op">..</span> n]</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a><span class="co">-- This takes a lot of time to compute</span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf0 $ (Abs (Var 0 `App` expensiveTm 10000)) `App` Abs c0</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="co">-- This takes less than a second to compute on my machine</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf1 $ (Abs (Var 0 `App` expensiveTm 10000)) `App` Abs c0</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x1</span></span></code></pre></div>
 <p>Great, our optimisation worked (at least for this particular term)!
 We may call the normaliser <code>nf1</code> <em>weak-applicative-order
 normalisation with meta-level laziness</em>. Meta-level laziness refers
@@ -707,8 +727,8 @@ class="header-section-number">6</span> The lazy tagging trick</h1>
 <code>beta</code> to substitute the actual argument <code>a'</code> for
 the binder of the lambda abstraction. Recall that the function
 <code>beta</code> is defined by</p>
-<div class="sourceCode" id="cb17"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>beta b a <span class="ot">=</span> shift <span class="dv">0</span> (<span class="op">-</span><span class="dv">1</span>) (subst b <span class="dv">0</span> (shift <span class="dv">0</span> <span class="dv">1</span> a))</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>beta b a <span class="ot">=</span> shift <span class="dv">0</span> (<span class="op">-</span><span class="dv">1</span>) (subst b <span class="dv">0</span> (shift <span class="dv">0</span> <span class="dv">1</span> a))</span></code></pre></div>
 <p>So <code>beta b a</code> is not a cheap operation. We need to first
 use <code>shift</code> to bring the argument <code>a</code> to the next
 de Bruijn level, then traverses the function body <code>b</code> to do
@@ -725,54 +745,54 @@ trick suffices.</p>
 <p>The trick that we are going to use to make substitution efficient is
 <em>lazy tagging</em>. The trick is best explained by a simple example.
 Suppose we have a binary tree storing integers</p>
-<div class="sourceCode" id="cb18"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tree</span> <span class="ot">=</span> <span class="dt">Leaf</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">Node</span> <span class="dt">Tree</span> <span class="dt">Tree</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tree</span> <span class="ot">=</span> <span class="dt">Leaf</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">Node</span> <span class="dt">Tree</span> <span class="dt">Tree</span></span></code></pre></div>
 <p>and suppose that we would like to perform the operation of adding
 some integer to every integer of a tree:</p>
-<div class="sourceCode" id="cb19"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ot">add ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tree</span> <span class="ot">-&gt;</span> <span class="dt">Tree</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>add n (<span class="dt">Leaf</span> i) <span class="ot">=</span> <span class="dt">Leaf</span> (n <span class="op">+</span> i)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>add n (<span class="dt">Node</span> l r) <span class="ot">=</span> <span class="dt">Node</span> (add n l) (add n r)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ot">add ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tree</span> <span class="ot">-&gt;</span> <span class="dt">Tree</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>add n (<span class="dt">Leaf</span> i) <span class="ot">=</span> <span class="dt">Leaf</span> (n <span class="op">+</span> i)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>add n (<span class="dt">Node</span> l r) <span class="ot">=</span> <span class="dt">Node</span> (add n l) (add n r)</span></code></pre></div>
 <p>The operation <code>add n t</code> works in time
 <code>O(size t)</code>. The trick of lazy tagging optimises
 <code>add</code> to <code>O(1)</code> by changing the tree datatype
 to</p>
-<div class="sourceCode" id="cb20"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tree&#39;</span> <span class="ot">=</span> <span class="dt">Leaf&#39;</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">Node&#39;</span>  <span class="dt">Int</span> <span class="dt">Tree&#39;</span> <span class="dt">Tree&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tree&#39;</span> <span class="ot">=</span> <span class="dt">Leaf&#39;</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">Node&#39;</span>  <span class="dt">Int</span> <span class="dt">Tree&#39;</span> <span class="dt">Tree&#39;</span></span></code></pre></div>
 <p>where the constructor <code>Node</code> now has an additional
 <code>Int</code> field (the lazy tag) storing a number that is logically
 added to all the leaves of the tree. With this additional field,
 <code>add</code> can be implemented as</p>
-<div class="sourceCode" id="cb21"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ot">add&#39; ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tree&#39;</span> <span class="ot">-&gt;</span> <span class="dt">Tree&#39;</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>add&#39; n (<span class="dt">Leaf&#39;</span> i) <span class="ot">=</span> <span class="dt">Leaf&#39;</span> (n <span class="op">+</span> i)</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>add&#39; n (<span class="dt">Node&#39;</span> m l r) <span class="ot">=</span> <span class="dt">Node&#39;</span> (n <span class="op">+</span> m) l r</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="ot">add&#39; ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tree&#39;</span> <span class="ot">-&gt;</span> <span class="dt">Tree&#39;</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>add&#39; n (<span class="dt">Leaf&#39;</span> i) <span class="ot">=</span> <span class="dt">Leaf&#39;</span> (n <span class="op">+</span> i)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>add&#39; n (<span class="dt">Node&#39;</span> m l r) <span class="ot">=</span> <span class="dt">Node&#39;</span> (n <span class="op">+</span> m) l r</span></code></pre></div>
 <p>On the other hand, whenever we want to access the two sub-trees of a
 node, we should always push down the lazy tag first:</p>
-<div class="sourceCode" id="cb22"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ot">push ::</span> <span class="dt">Tree&#39;</span> <span class="ot">-&gt;</span> <span class="dt">Tree&#39;</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>push (<span class="dt">Node&#39;</span> m l r)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> m <span class="op">/=</span> <span class="dv">0</span> <span class="ot">=</span> <span class="dt">Node&#39;</span> <span class="dv">0</span> (add&#39; m l) (add&#39; m r)</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>push t <span class="ot">=</span> t</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ot">push ::</span> <span class="dt">Tree&#39;</span> <span class="ot">-&gt;</span> <span class="dt">Tree&#39;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>push (<span class="dt">Node&#39;</span> m l r)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> m <span class="op">/=</span> <span class="dv">0</span> <span class="ot">=</span> <span class="dt">Node&#39;</span> <span class="dv">0</span> (add&#39; m l) (add&#39; m r)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>push t <span class="ot">=</span> t</span></code></pre></div>
 <p>This <code>push</code> operation is also <code>O(1)</code> because
 <code>add'</code> is <code>O(1)</code>, so having an additional
 <code>push</code> whenever we want to pattern match a <code>Node'</code>
 doesn’t change the time complexity. For example, if we want to sum the
 integers of a tree, we do</p>
-<div class="sourceCode" id="cb23"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="ot">sumTree ::</span> <span class="dt">Tree&#39;</span> <span class="ot">-&gt;</span> <span class="dt">Int</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>sumTree (<span class="dt">Leaf&#39;</span> i) <span class="ot">=</span> i</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>sumTree t <span class="ot">=</span> <span class="kw">case</span> push t <span class="kw">of</span> <span class="dt">Node&#39;</span> _ l r <span class="ot">-&gt;</span> sumTree l <span class="op">+</span> sumTree r</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="ot">sumTree ::</span> <span class="dt">Tree&#39;</span> <span class="ot">-&gt;</span> <span class="dt">Int</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>sumTree (<span class="dt">Leaf&#39;</span> i) <span class="ot">=</span> i</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>sumTree t <span class="ot">=</span> <span class="kw">case</span> push t <span class="kw">of</span> <span class="dt">Node&#39;</span> _ l r <span class="ot">-&gt;</span> sumTree l <span class="op">+</span> sumTree r</span></code></pre></div>
 <p>In Haskell, we can even use view patterns and pattern synonyms to
 make the call of <code>push</code> completely transparent.</p>
 <p>The reader might be wondering how lazy tagging is different from
 laziness of Haskell? Why don’t we simply make our trees lazy by
 writing</p>
-<div class="sourceCode" id="cb24"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tree&#39;&#39;</span> <span class="ot">=</span> <span class="dt">Leaf&#39;&#39;</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">Node&#39;&#39;</span> <span class="op">~</span><span class="dt">Tree</span> <span class="op">~</span><span class="dt">Tree</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tree&#39;&#39;</span> <span class="ot">=</span> <span class="dt">Leaf&#39;&#39;</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">Node&#39;&#39;</span> <span class="op">~</span><span class="dt">Tree</span> <span class="op">~</span><span class="dt">Tree</span></span></code></pre></div>
 <p>The key difference is because of this line:</p>
-<div class="sourceCode" id="cb25"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>add&#39; n (<span class="dt">Node&#39;</span> m l r) <span class="ot">=</span> <span class="dt">Node&#39;</span> (n <span class="op">+</span> m) l r</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>add&#39; n (<span class="dt">Node&#39;</span> m l r) <span class="ot">=</span> <span class="dt">Node&#39;</span> (n <span class="op">+</span> m) l r</span></code></pre></div>
 <p>which combines two lazy tags <code>n</code> and <code>m</code> into
 one tag <code>n + m</code>. In comparison, lazy evaluation of Haskell
 isn’t clever enough to do this; after applying <code>add</code> for
@@ -829,7 +849,7 @@ with substitutions. There is similarity between delayed substitution and
 our idea here, but the motivation is completely different: loc cit the
 problem is that some syntactic constructors don’t commute with
 substitution, whereas our syntactic constructors do commute with
-substitution and we make substitution delay for efficiency
+substitution and we delay substitution for efficiency
 considerations.</p>
 <p>Enough with talking, let’s implement our ideas. The first thing that
 we are going to do is to define the type of weak normal forms with lazy
@@ -849,49 +869,49 @@ this function (stored as a lazy list of values); or</p></li>
 index of the variable and the arguments (stored also as a lazy list of
 values).</p></li>
 </ol>
-<div class="sourceCode" id="cb29"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Val2</span> <span class="ot">=</span> <span class="dt">Closure2</span> <span class="dt">Tm</span> <span class="dt">Subst2</span> <span class="op">|</span> <span class="dt">Spine2</span> <span class="dt">Int</span> (<span class="dt">LazyList</span> <span class="dt">Val2</span>)</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Subst2</span> <span class="ot">=</span> <span class="dt">LazyList</span> <span class="dt">Val2</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Val2</span> <span class="ot">=</span> <span class="dt">Closure2</span> <span class="dt">Tm</span> <span class="dt">Subst2</span> <span class="op">|</span> <span class="dt">Spine2</span> <span class="dt">Int</span> (<span class="dt">LazyList</span> <span class="dt">Val2</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Subst2</span> <span class="ot">=</span> <span class="dt">LazyList</span> <span class="dt">Val2</span></span></code></pre></div>
 <p>Here we use lazy lists (which is just the default Haskell list type
 <code>[a]</code>) rather than strict lists because we want to make
 normalisation of function arguments lazy, like how we did in
 <code>wnf1</code>. Strictly speaking we only need the payloads of the
 list to be lazy and the structure of the list itself can remain
 strict:</p>
-<div class="sourceCode" id="cb30"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">PayloadLazyList</span> a <span class="ot">=</span> <span class="dt">Nil</span> <span class="op">|</span> <span class="dt">Cons</span> <span class="op">~</span>a (<span class="dt">PayloadLazyList</span> a)</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">PayloadLazyList</span> a <span class="ot">=</span> <span class="dt">Nil</span> <span class="op">|</span> <span class="dt">Cons</span> <span class="op">~</span>a (<span class="dt">PayloadLazyList</span> a)</span></code></pre></div>
 <p>but let’s just use <code>LazyList</code> (lazy lists of lazy
-payloads) for convenience so that we don’t need to re-define some
-standard list functions that we are going to use.</p>
+payloads) because I am too lazy to re-define the standard list functions
+that we are going to use.</p>
 <p>The type of <code>wnf1 :: Tm -&gt; Tm</code> becomes then</p>
-<div class="sourceCode" id="cb31"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf2 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span></span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf2 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span></span></code></pre></div>
 <p>where the output is a value (i.e. a weak normal form with lazy
 substitutions) and the input is a term paired with lazy substitutions
 applied to this term. Whenever <code>wnf2</code> sees a variable, the
 variable logically has been replaced by the lazy substitution, so we
 just look up the substitution:</p>
-<div class="sourceCode" id="cb32"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">Var</span> n) sub <span class="ot">=</span> sub <span class="op">!!</span> n</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">Var</span> n) sub <span class="ot">=</span> sub <span class="op">!!</span> n</span></code></pre></div>
 <p>When <code>wnf2</code> sees a lambda abstraction, it is already a
 weak normal form, so we just store it along with the lazy
 substitution:</p>
-<div class="sourceCode" id="cb33"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure2</span> b sub</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure2</span> b sub</span></code></pre></div>
 <p>The interesting case is again function application
 <code>App f a</code>. We will do recursion on <code>f</code> and
 <code>a</code> as before:</p>
-<div class="sourceCode" id="cb34"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf2 f sub</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf2 a sub</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> _what_do_we_do_here</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine2</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine2</span> v (a&#39; <span class="op">:</span> as)</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf2 f sub</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf2 a sub</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> _what_do_we_do_here</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine2</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine2</span> v (a&#39; <span class="op">:</span> as)</span></code></pre></div>
 <p>but what should we do this time when the function is a lambda
 abstraction? Previously we did <code>wnf1 (beta b a')</code> where</p>
-<div class="sourceCode" id="cb35"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>beta b a <span class="ot">=</span> shift <span class="dv">0</span> (<span class="op">-</span><span class="dv">1</span>) (subst b <span class="dv">0</span> (shift <span class="dv">0</span> <span class="dv">1</span> a))</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>beta b a <span class="ot">=</span> shift <span class="dv">0</span> (<span class="op">-</span><span class="dv">1</span>) (subst b <span class="dv">0</span> (shift <span class="dv">0</span> <span class="dv">1</span> a))</span></code></pre></div>
 <p>Substituting <code>a'</code> for the variable <code>0</code> in
 <code>b</code> should now be just <code>a' : sub'</code>. However, we
 now need to shift the de Bruijn indices of the whole substitution by 1
@@ -899,16 +919,16 @@ rather than just <code>a</code>, because <code>sub'</code> is an lazy
 substitution applied <code>Abs b</code> rather than <code>b</code>.
 Therefore our new substitution for <code>b</code> should be
 <code>shift0List 1 (a' : sub')</code> where</p>
-<div class="sourceCode" id="cb36"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="ot">shift0Val ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>shift0Val i (<span class="dt">Spine2</span> n as) <span class="ot">=</span> <span class="dt">Spine2</span> (n <span class="op">+</span> i) (shift0List i as)</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>shift0Val i (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Closure2</span> b (shift0List i sub)</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="ot">shift0List ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span></span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>shift0List i <span class="ot">=</span> <span class="fu">map</span> (shift0Val i)</span></code></pre></div>
-<p>Note that <code>shift0Val</code> doesn’t need to shifting the indices
-in the function body <code>b</code>, because these variables logically
-have already been substituted by <code>sub</code>.</p>
+<div class="sourceCode" id="cb38"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="ot">shift0Val ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>shift0Val i (<span class="dt">Spine2</span> n as) <span class="ot">=</span> <span class="dt">Spine2</span> (n <span class="op">+</span> i) (shift0List i as)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>shift0Val i (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Closure2</span> b (shift0List i sub)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="ot">shift0List ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>shift0List i <span class="ot">=</span> <span class="fu">map</span> (shift0Val i)</span></code></pre></div>
+<p>Note that <code>shift0Val</code> doesn’t need to shift the indices in
+the function body <code>b</code>, because these variables logically have
+already been substituted by <code>sub</code>.</p>
 <p>Another difficulty is the <code>shift 0 (-1)</code> in the definition
 of <code>beta b a</code>. Because now our substitution is lazy, we don’t
 really have the result of substitution to perform this
@@ -923,16 +943,16 @@ the second equality is because removing the variable <code>0</code> that
 is substituted away before or after weak normalisation gives the same
 result. This observation then allows us to translate <code>wnf1</code>
 to <code>wnf2</code>:</p>
-<div class="sourceCode" id="cb38"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf2 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure2</span> b sub</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">Var</span> n) sub <span class="ot">=</span> sub <span class="op">!!</span> n</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf2 f sub</span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf2 a sub</span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> shift0Val (<span class="op">-</span><span class="dv">1</span>) (wnf2 b (shift0List <span class="dv">1</span> (a&#39; <span class="op">:</span> sub&#39;)))</span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine2</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine2</span> v (a&#39; <span class="op">:</span> as)</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf2 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure2</span> b sub</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">Var</span> n) sub <span class="ot">=</span> sub <span class="op">!!</span> n</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>wnf2 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf2 f sub</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf2 a sub</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> shift0Val (<span class="op">-</span><span class="dv">1</span>) (wnf2 b (shift0List <span class="dv">1</span> (a&#39; <span class="op">:</span> sub&#39;)))</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine2</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine2</span> v (a&#39; <span class="op">:</span> as)</span></code></pre></div>
 <p>Reifying values to normal forms works the same as
 <code>reify1</code>, except that for the case of a lambda abstraction
 <code>Closure2 t sub</code>, the new substitution for the function body
@@ -943,18 +963,18 @@ the function body <code>b</code> is still <code>0</code> itself, applied
 to no arguments. And <code>shift0List 1</code> is applied to
 <code>sub</code> because <code>sub</code> is a substitution applied to
 <code>Abs b</code> rather than <code>b</code>.</p>
-<div class="sourceCode" id="cb39"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify2 ::</span> <span class="dt">Val2</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify2 (wnf2 b (<span class="dt">Spine2</span> <span class="dv">0</span> [] <span class="op">:</span> shift0List <span class="dv">1</span> sub)))</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Spine2</span> v as) <span class="ot">=</span> <span class="fu">foldr</span> (\a r <span class="ot">-&gt;</span> r <span class="ot">`App`</span> reify2 a) (<span class="dt">Var</span> v) as</span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify2 ::</span> <span class="dt">Val2</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify2 (wnf2 b (<span class="dt">Spine2</span> <span class="dv">0</span> [] <span class="op">:</span> shift0List <span class="dv">1</span> sub)))</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Spine2</span> v as) <span class="ot">=</span> <span class="fu">foldr</span> (\a r <span class="ot">-&gt;</span> r <span class="ot">`App`</span> reify2 a) (<span class="dt">Var</span> v) as</span></code></pre></div>
 <p>Putting things together, we have our new normaliser:</p>
-<div class="sourceCode" id="cb40"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf2 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>nf2 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify2 (wnf2 t (reflect2 n))</span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect2 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>reflect2 n <span class="ot">=</span> <span class="fu">map</span> (\v <span class="ot">-&gt;</span> <span class="dt">Spine2</span> v []) [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf2 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>nf2 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify2 (wnf2 t (reflect2 n))</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect2 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>reflect2 n <span class="ot">=</span> <span class="fu">map</span> (\v <span class="ot">-&gt;</span> <span class="dt">Spine2</span> v []) [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
 <p>The function <code>reflect2</code> creates the trivial substitution
 for the free variables of the term <code>t</code>, substituting each
 free variable <code>v</code> for <code>v</code> itself. (Side remark:
@@ -962,18 +982,18 @@ free variable <code>v</code> for <code>v</code> itself. (Side remark:
 for typed languages with <em>eta-equalities</em>, this
 <code>reflect</code> function would be more interesting.)</p>
 <p>Let’s do some sanity checks again:</p>
-<div class="sourceCode" id="cb41"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf2 c2</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 x1)</span></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf2 (cmul `App` c2 `App` (cinc `App` c2))</span></span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 x1)))))</span></span>
-<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf2 (cmul `App` c2 `App` (cinc `App` c2) `App` Var 0 `App` Var 1)</span></span>
-<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- x1 (x1 (x1 (x1 (x1 (x1 x0)))))</span></span>
-<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf2 (cmul `App` (cinc `App` c2) `App` (cinc `App` c2))</span></span>
-<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 x1))))))))</span></span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf2 c2</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 x1)</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf2 (cmul `App` c2 `App` (cinc `App` c2))</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 x1)))))</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf2 (cmul `App` c2 `App` (cinc `App` c2) `App` Var 0 `App` Var 1)</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- x1 (x1 (x1 (x1 (x1 (x1 x0)))))</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf2 (cmul `App` (cinc `App` c2) `App` (cinc `App` c2))</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 x1))))))))</span></span></code></pre></div>
 <h1 data-number="8" id="defunctional-normalisation-by-evaluation"><span
 class="header-section-number">8</span> Defunctional normalisation by
 evaluation</h1>
@@ -984,13 +1004,13 @@ a scope-safe way. They shall not play any central role in normalisation.
 Therefore we’d like to optimise them out.</p>
 <p>Let’s first work on the shifting in this line of
 <code>wnf2</code>:</p>
-<div class="sourceCode" id="cb42"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> shift0Val (<span class="op">-</span><span class="dv">1</span>) (wnf2 b (shift0List <span class="dv">1</span> (a&#39; <span class="op">:</span> sub&#39;)))</span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> shift0Val (<span class="op">-</span><span class="dv">1</span>) (wnf2 b (shift0List <span class="dv">1</span> (a&#39; <span class="op">:</span> sub&#39;)))</span></code></pre></div>
 <p>These two shifting operations have their origin from substitution,
 namely the following line from our earlier <code>wnf1</code> (with
 <code>beta</code> inlined for easier comparison):</p>
-<div class="sourceCode" id="cb43"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Abs</span> b <span class="ot">-&gt;</span> wnf1 (shift <span class="dv">0</span> (<span class="op">-</span><span class="dv">1</span>) (subst b <span class="dv">0</span> (shift <span class="dv">0</span> <span class="dv">1</span> a&#39;)))</span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Abs</span> b <span class="ot">-&gt;</span> wnf1 (shift <span class="dv">0</span> (<span class="op">-</span><span class="dv">1</span>) (subst b <span class="dv">0</span> (shift <span class="dv">0</span> <span class="dv">1</span> a&#39;)))</span></code></pre></div>
 <p>A observation useful to us is that in the setting of
 <code>wnf2</code> the lazy substitution <code>a' : sub'</code>
 substitutes <strong>all</strong> the free variables of <code>b</code>.
@@ -1010,33 +1030,33 @@ out!</p>
 <p>The observation allows us to optimise <code>wnf2</code> into the
 following <code>wnf3</code>, resulting a new normaliser
 <code>nf3</code>:</p>
-<div class="sourceCode" id="cb46"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf3 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>wnf3 (<span class="dt">Var</span> n) sub <span class="ot">=</span> sub <span class="op">!!</span> n</span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>wnf3 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure2</span> b sub</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>wnf3 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf3 f sub</span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf3 a sub</span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> wnf3 b (a&#39; <span class="op">:</span> sub&#39;)</span>
-<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine2</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine2</span> v (a&#39; <span class="op">:</span> as)</span>
-<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a><span class="ot">nf3 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>nf3 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
-<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify2 (wnf3 t (reflect2 n))</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf3 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>wnf3 (<span class="dt">Var</span> n) sub <span class="ot">=</span> sub <span class="op">!!</span> n</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>wnf3 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure2</span> b sub</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>wnf3 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf3 f sub</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf3 a sub</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> wnf3 b (a&#39; <span class="op">:</span> sub&#39;)</span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine2</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine2</span> v (a&#39; <span class="op">:</span> as)</span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a><span class="ot">nf3 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>nf3 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify2 (wnf3 t (reflect2 n))</span></code></pre></div>
 <p>The same sanity checks again:</p>
-<div class="sourceCode" id="cb47"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf3 c2</span></span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 x1)</span></span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf3 (cmul `App` c2 `App` (cinc `App` c2))</span></span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 x1)))))</span></span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf3 (cmul `App` c2 `App` (cinc `App` c2) `App` Var 0 `App` Var 1)</span></span>
-<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- x1 (x1 (x1 (x1 (x1 (x1 x0)))))</span></span>
-<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf3 (cmul `App` (cinc `App` c2) `App` (cinc `App` c2))</span></span>
-<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 x1))))))))</span></span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf3 c2</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 x1)</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf3 (cmul `App` c2 `App` (cinc `App` c2))</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 x1)))))</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf3 (cmul `App` c2 `App` (cinc `App` c2) `App` Var 0 `App` Var 1)</span></span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- x1 (x1 (x1 (x1 (x1 (x1 x0)))))</span></span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf3 (cmul `App` (cinc `App` c2) `App` (cinc `App` c2))</span></span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 x1))))))))</span></span></code></pre></div>
 <p>The normaliser <code>nf3</code> is essentially already
 <em>normalisation by evaluation</em> for untyped lambda calculus. To
 normalise a term <code>t</code>, we first evaluate it into a semantic
@@ -1049,13 +1069,13 @@ value.</p>
 class="header-section-number">9</span> Functional normalisation by
 evaluation</h1>
 <p>I have been saying that <code>wnf3 t</code> <em>evaluates</em> a term
-into a semantic domain. However, if we are pedant with terminology, we
+into a semantic domain. However, if we are pedantic with terminology, we
 should only use the word the word ‘evaluate’ if <code>wnf3</code> is
 computed compositionally (i.e. <code>wnf3</code> should be a fold of
 terms). Unfortunately, <code>wnf3</code> is not (at least, not on the
 nose) compositional because of this line:</p>
-<div class="sourceCode" id="cb48"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> wnf3 b (a&#39; <span class="op">:</span> sub&#39;)</span></code></pre></div>
+<div class="sourceCode" id="cb50"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure2</span> b sub&#39; <span class="ot">-&gt;</span> wnf3 b (a&#39; <span class="op">:</span> sub&#39;)</span></code></pre></div>
 <p>where we do recursion on <code>b</code> but <code>b</code> isn’t a
 subterm of the input <code>App f a</code>. However, if we look more
 closely at <code>wnf3</code>, we see that the stem of problem is that
@@ -1078,8 +1098,8 @@ done by <code>wnf3 (Abs b) sub</code> now.</p>
 <code>Val2 -&gt; Val2</code> is the key idea, but there is one more
 small change that we also need to do too. Another place that
 <code>Closure2</code> is involved is when it is reified</p>
-<div class="sourceCode" id="cb49"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify2 (wnf2 b (<span class="dt">Spine2</span> <span class="dv">0</span> [] <span class="op">:</span> shift0List <span class="dv">1</span> sub)))</span></code></pre></div>
+<div class="sourceCode" id="cb51"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify2 (wnf2 b (<span class="dt">Spine2</span> <span class="dv">0</span> [] <span class="op">:</span> shift0List <span class="dv">1</span> sub)))</span></code></pre></div>
 <p>where the free variables in the original substitution
 <code>sub</code> is shifted by <code>1</code>. After refactoring
 <code>Closure2 b sub</code> into a function
@@ -1091,57 +1111,57 @@ apply it to <code>sub</code>.</p>
 <p>Now let’s execute this refactoring. First of all, we need to change
 the constructor <code>Closure2 Tm Subst2</code> from storing a function
 body and a lazy substitution to a genuine function:</p>
-<div class="sourceCode" id="cb50"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Val4</span> <span class="ot">=</span> <span class="dt">Closure4</span> (<span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span>) <span class="op">|</span> <span class="dt">Spine4</span> <span class="dt">Int</span> (<span class="dt">LazyList</span> <span class="dt">Val4</span>)</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Subst4</span> <span class="ot">=</span> <span class="dt">LazyList</span> <span class="dt">Val4</span></span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf4 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst4</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span></span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>wnf4 (<span class="dt">Var</span> n) sub <span class="ot">=</span> sub <span class="op">!!</span> n</span></code></pre></div>
+<div class="sourceCode" id="cb52"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Val4</span> <span class="ot">=</span> <span class="dt">Closure4</span> (<span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span>) <span class="op">|</span> <span class="dt">Spine4</span> <span class="dt">Int</span> (<span class="dt">LazyList</span> <span class="dt">Val4</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Subst4</span> <span class="ot">=</span> <span class="dt">LazyList</span> <span class="dt">Val4</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf4 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst4</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>wnf4 (<span class="dt">Var</span> n) sub <span class="ot">=</span> sub <span class="op">!!</span> n</span></code></pre></div>
 <p>And when <code>wnf4</code> sees a lambda abstraction, it defines a
 function that structurally recurs into <code>b</code>:</p>
-<div class="sourceCode" id="cb51"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>wnf4 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure4</span> (\i (<span class="op">~</span>a) <span class="ot">-&gt;</span> wnf4 b (a <span class="op">:</span> shift0List4 i sub))</span></code></pre></div>
+<div class="sourceCode" id="cb53"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>wnf4 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure4</span> (\i (<span class="op">~</span>a) <span class="ot">-&gt;</span> wnf4 b (a <span class="op">:</span> shift0List4 i sub))</span></code></pre></div>
 <p>Correspondingly, in the case of <code>App f a</code>, we just need to
 call the function in the place where we previously had
 <code>Closure2 b sub' -&gt; wnf3 b (a' : sub')</code>:</p>
-<div class="sourceCode" id="cb52"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>wnf4 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf4 f sub</span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf4 a sub</span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure4</span> b <span class="ot">-&gt;</span> b <span class="dv">0</span> a&#39;</span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine4</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine4</span> v (a&#39; <span class="op">:</span> as)</span></code></pre></div>
-<p>And in reification, where we previously did</p>
-<div class="sourceCode" id="cb53"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify2 (wnf2 b (<span class="dt">Spine2</span> <span class="dv">0</span> [] <span class="op">:</span> shift0List <span class="dv">1</span> sub)))</span></code></pre></div>
-<p>now we just need to do:</p>
 <div class="sourceCode" id="cb54"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify4 ::</span> <span class="dt">Val4</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>reify4 (<span class="dt">Closure4</span> b) <span class="ot">=</span> <span class="dt">Abs</span> <span class="op">$</span> reify4 (b <span class="dv">1</span> (<span class="dt">Spine4</span> <span class="dv">0</span> []))</span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>reify4 (<span class="dt">Spine4</span> v as) <span class="ot">=</span> <span class="fu">foldr</span> (\a r <span class="ot">-&gt;</span> r <span class="ot">`App`</span> reify4 a) (<span class="dt">Var</span> v) as</span></code></pre></div>
-<p>Shifting on closures needs some slight refactoring as well:</p>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>wnf4 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf4 f sub</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf4 a sub</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure4</span> b <span class="ot">-&gt;</span> b <span class="dv">0</span> a&#39;</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine4</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine4</span> v (a&#39; <span class="op">:</span> as)</span></code></pre></div>
+<p>And in reification, where we previously did</p>
 <div class="sourceCode" id="cb55"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="ot">shift0Val4 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span></span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>shift0Val4 <span class="dv">0</span> v <span class="ot">=</span> v</span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>shift0Val4 i (<span class="dt">Spine4</span> n as) <span class="ot">=</span> <span class="dt">Spine4</span> (n <span class="op">+</span> i) (shift0List4 i as)</span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>shift0Val4 i (<span class="dt">Closure4</span> b) <span class="ot">=</span> <span class="dt">Closure4</span> (b <span class="op">.</span> (<span class="op">+</span>i))</span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a><span class="ot">shift0List4 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst4</span> <span class="ot">-&gt;</span> <span class="dt">Subst4</span></span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>shift0List4 <span class="dv">0</span> vs <span class="ot">=</span> vs</span>
-<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>shift0List4 i vs <span class="ot">=</span> <span class="fu">map</span> (shift0Val4 i) vs</span></code></pre></div>
-<p>Reflection however stays the same:</p>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify2 (wnf2 b (<span class="dt">Spine2</span> <span class="dv">0</span> [] <span class="op">:</span> shift0List <span class="dv">1</span> sub)))</span></code></pre></div>
+<p>now we just need to do:</p>
 <div class="sourceCode" id="cb56"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect4 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst4</span></span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>reflect4 n <span class="ot">=</span> <span class="fu">map</span> (\v <span class="ot">-&gt;</span> <span class="dt">Spine4</span> v []) [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
-<p>And our new normaliser is again:</p>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify4 ::</span> <span class="dt">Val4</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>reify4 (<span class="dt">Closure4</span> b) <span class="ot">=</span> <span class="dt">Abs</span> <span class="op">$</span> reify4 (b <span class="dv">1</span> (<span class="dt">Spine4</span> <span class="dv">0</span> []))</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>reify4 (<span class="dt">Spine4</span> v as) <span class="ot">=</span> <span class="fu">foldr</span> (\a r <span class="ot">-&gt;</span> r <span class="ot">`App`</span> reify4 a) (<span class="dt">Var</span> v) as</span></code></pre></div>
+<p>Shifting on closures needs some slight refactoring as well:</p>
 <div class="sourceCode" id="cb57"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf4 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>nf4 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify4 (wnf4 t (reflect4 n))</span></code></pre></div>
-<p>Just to check again that 3 times 3 is still 9:</p>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="ot">shift0Val4 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span> <span class="ot">-&gt;</span> <span class="dt">Val4</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>shift0Val4 <span class="dv">0</span> v <span class="ot">=</span> v</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>shift0Val4 i (<span class="dt">Spine4</span> n as) <span class="ot">=</span> <span class="dt">Spine4</span> (n <span class="op">+</span> i) (shift0List4 i as)</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>shift0Val4 i (<span class="dt">Closure4</span> b) <span class="ot">=</span> <span class="dt">Closure4</span> (b <span class="op">.</span> (<span class="op">+</span>i))</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a><span class="ot">shift0List4 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst4</span> <span class="ot">-&gt;</span> <span class="dt">Subst4</span></span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>shift0List4 <span class="dv">0</span> vs <span class="ot">=</span> vs</span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>shift0List4 i vs <span class="ot">=</span> <span class="fu">map</span> (shift0Val4 i) vs</span></code></pre></div>
+<p>Reflection however stays the same:</p>
 <div class="sourceCode" id="cb58"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf4 (cmul `App` (cinc `App` c2) `App` (cinc `App` c2))</span></span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 x1))))))))</span></span></code></pre></div>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect4 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst4</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>reflect4 n <span class="ot">=</span> <span class="fu">map</span> (\v <span class="ot">-&gt;</span> <span class="dt">Spine4</span> v []) [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
+<p>And our new normaliser is again:</p>
+<div class="sourceCode" id="cb59"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf4 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>nf4 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify4 (wnf4 t (reflect4 n))</span></code></pre></div>
+<p>Just to check again that 3 times 3 is still 9:</p>
+<div class="sourceCode" id="cb60"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf4 (cmul `App` (cinc `App` c2) `App` (cinc `App` c2))</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 (x0 x1))))))))</span></span></code></pre></div>
 <p>After performing this refactoring, <code>wnf4</code> becomes
 compositional – it is a fold on the syntax of lambda terms. I’d like to
 emphasise that we have <code>wnf4</code> only for making the hidden
@@ -1179,9 +1199,9 @@ de Bruijn levels</h1>
 <p>Let’s continue our optimisation journey. The NbE normaliser
 <code>nf3</code> (and <code>nf4</code>) still has one shifting
 operation: when reifying a closure we had:</p>
-<div class="sourceCode" id="cb59"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify2</span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>  (wnf2 b (<span class="dt">Spine2</span> <span class="dv">0</span> [] <span class="op">:</span> shift0List <span class="dv">1</span> sub)))</span></code></pre></div>
+<div class="sourceCode" id="cb61"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>reify2 (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify2</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>  (wnf2 b (<span class="dt">Spine2</span> <span class="dv">0</span> [] <span class="op">:</span> shift0List <span class="dv">1</span> sub)))</span></code></pre></div>
 <p>The shifting operation is not cheap: it needs to traverse the whole
 substitution to increment all de Bruijn indices by <code>1</code>. How
 can we make this faster? Lazy tagging! Well lazy tagging will do the job
@@ -1224,9 +1244,9 @@ inside</em>.</p>
 integer representations of variables are only dealt in the
 <code>reify</code> and <code>reflect</code> functions. We change
 <code>reify2 :: Val2 -&gt; Tm</code> to the following:</p>
-<div class="sourceCode" id="cb61"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify5 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>reify5 lvl (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify5 (lvl <span class="op">+</span> <span class="dv">1</span>) (wnf3 b (<span class="dt">Spine2</span> lvl [] <span class="op">:</span> sub)))</span></code></pre></div>
+<div class="sourceCode" id="cb63"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify5 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>reify5 lvl (<span class="dt">Closure2</span> b sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify5 (lvl <span class="op">+</span> <span class="dv">1</span>) (wnf3 b (<span class="dt">Spine2</span> lvl [] <span class="op">:</span> sub)))</span></code></pre></div>
 <p>Here when we reify a function body, we (lazily) substitute the
 current de Bruijn level <code>lvl</code> for the newly bound variable,
 instead of the de Bruijn index <code>0</code> as we did previously in
@@ -1239,31 +1259,31 @@ representation, we do no need to do <code>shift0List 1</code> to
 has type <code>Tm</code>, which still use de Bruijn indices. Hence we
 need to convert a de Bruijn level <code>v</code> back to a de Bruijn
 index <code>lvl - v - 1</code>:</p>
-<div class="sourceCode" id="cb62"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>reify5 lvl (<span class="dt">Spine2</span> v as) <span class="ot">=</span> <span class="fu">foldr</span> (\a s <span class="ot">-&gt;</span> s <span class="ot">`App`</span> reify5 lvl a) (<span class="dt">Var</span> (lvl <span class="op">-</span> v <span class="op">-</span> <span class="dv">1</span>)) as</span></code></pre></div>
+<div class="sourceCode" id="cb64"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>reify5 lvl (<span class="dt">Spine2</span> v as) <span class="ot">=</span> <span class="fu">foldr</span> (\a s <span class="ot">-&gt;</span> s <span class="ot">`App`</span> reify5 lvl a) (<span class="dt">Var</span> (lvl <span class="op">-</span> v <span class="op">-</span> <span class="dv">1</span>)) as</span></code></pre></div>
 <p>Similarly, the <code>reflect</code> function should be refactored to
 use de Bruijn levels as well. Therefore we change
 <code>reflect2 n = map (\v -&gt; Spine2 v []) [0 .. n]</code> to</p>
-<div class="sourceCode" id="cb63"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect5 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span></span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>reflect5 n <span class="ot">=</span> <span class="fu">map</span> (\v <span class="ot">-&gt;</span> <span class="dt">Spine2</span> (n <span class="op">-</span> v) []) [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
+<div class="sourceCode" id="cb65"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect5 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>reflect5 n <span class="ot">=</span> <span class="fu">map</span> (\v <span class="ot">-&gt;</span> <span class="dt">Spine2</span> (n <span class="op">-</span> v) []) [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
 <p>We don’t need to change <code>wnf3</code> at all. Therefore our new
 normaliser is</p>
-<div class="sourceCode" id="cb64"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf5 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>nf5 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
-<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify5 (n<span class="op">+</span><span class="dv">1</span>) (wnf3 t (reflect5 n))</span>
-<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf5 c2</span></span>
-<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 x1)</span></span>
-<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf5 (cmul `App` c2 `App` (cinc `App` c2))</span></span>
-<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 x1)))))</span></span>
-<span id="cb64-10"><a href="#cb64-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb64-11"><a href="#cb64-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf5 ((cmul `App` c2 `App` (cinc `App` c2)) `App` Var 0 `App` Var 1)</span></span>
-<span id="cb64-12"><a href="#cb64-12" aria-hidden="true" tabindex="-1"></a><span class="co">-- x1 (x1 (x1 (x1 (x1 (x1 x0)))))</span></span></code></pre></div>
+<div class="sourceCode" id="cb66"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf5 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>nf5 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify5 (n<span class="op">+</span><span class="dv">1</span>) (wnf3 t (reflect5 n))</span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf5 c2</span></span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 x1)</span></span>
+<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf5 (cmul `App` c2 `App` (cinc `App` c2))</span></span>
+<span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 x1)))))</span></span>
+<span id="cb66-10"><a href="#cb66-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-11"><a href="#cb66-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf5 ((cmul `App` c2 `App` (cinc `App` c2)) `App` Var 0 `App` Var 1)</span></span>
+<span id="cb66-12"><a href="#cb66-12" aria-hidden="true" tabindex="-1"></a><span class="co">-- x1 (x1 (x1 (x1 (x1 (x1 x0)))))</span></span></code></pre></div>
 <p>The normaliser <code>nf5</code> is exactly the version of NbE that
-you wound find in Andras Kovacs’s <a
+you wound find in András Kovács’s <a
 href="https://github.com/AndrasKovacs/elaboration-zoo/blob/master/01-eval-closures-debruijn/Main.hs">elaboration
 zoo</a> (which by the way is probably the best online resource for
 anyone who wants to learn practical implementations of type theories).
@@ -1331,20 +1351,20 @@ weak normal forms before (lazy) substitution, and then in the function
 body it would be duplicated 1000000 times, and the NbE would reify the
 weak normal form of <code>expensiveTm 100</code> 1000000 times, one time
 for each occurrence of <code>y</code>.</p>
-<div class="sourceCode" id="cb66"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nbeAdversarialExploit ::</span> <span class="dt">Tm</span></span>
-<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>nbeAdversarialExploit <span class="ot">=</span></span>
-<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Abs</span> (<span class="fu">foldr</span> (\_ r <span class="ot">-&gt;</span> r <span class="ot">`App`</span> <span class="dt">Var</span> <span class="dv">0</span>) (<span class="dt">Var</span> <span class="dv">1</span>) [<span class="dv">1</span><span class="op">..</span><span class="dv">1000000</span>]) <span class="ot">`App`</span> expensiveTm <span class="dv">100</span></span></code></pre></div>
+<div class="sourceCode" id="cb68"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nbeAdversarialExploit ::</span> <span class="dt">Tm</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>nbeAdversarialExploit <span class="ot">=</span></span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Abs</span> (<span class="fu">foldr</span> (\_ r <span class="ot">-&gt;</span> r <span class="ot">`App`</span> <span class="dt">Var</span> <span class="dv">0</span>) (<span class="dt">Var</span> <span class="dv">1</span>) [<span class="dv">1</span><span class="op">..</span><span class="dv">1000000</span>]) <span class="ot">`App`</span> expensiveTm <span class="dv">100</span></span></code></pre></div>
 <p>On this term, our naive normaliser <code>nf0</code> takes a few
 seconds to compute on my laptop:</p>
-<div class="sourceCode" id="cb67"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf0 nbeAdversarialExploit)</span></span>
-<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span></code></pre></div>
+<div class="sourceCode" id="cb69"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf0 nbeAdversarialExploit)</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span></code></pre></div>
 <p>But our best NbE normaliser <code>nf5</code> takes a much longer
 time:</p>
-<div class="sourceCode" id="cb68"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf5 nbeAdversarialExploit)</span></span>
-<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- ProgressCancelledException</span></span></code></pre></div>
+<div class="sourceCode" id="cb70"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf5 nbeAdversarialExploit)</span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- ProgressCancelledException</span></span></code></pre></div>
 <p>Let’s fix this problem in the rest of this article. The plan is
 simple: when we (weakly) normalise <code>App f a</code>, we create a
 lazy thunk of the full normal form of <code>a</code> and pass it to the
@@ -1388,58 +1408,58 @@ de Bruijn indices. For this we define a type <code>SList a</code> of
 lists with lazy tags of shift indices. We will use this type to replace
 <code>LazyList a</code> that we used before to represent lazy
 substitutions.</p>
-<div class="sourceCode" id="cb70"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">SList</span> a <span class="ot">=</span> <span class="dt">Nil</span> <span class="op">|</span> <span class="dt">Cons_</span> <span class="dt">Int</span> <span class="op">~</span>a (<span class="dt">SList</span> a) <span class="kw">deriving</span> <span class="dt">Show</span></span></code></pre></div>
+<div class="sourceCode" id="cb72"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">SList</span> a <span class="ot">=</span> <span class="dt">Nil</span> <span class="op">|</span> <span class="dt">Cons_</span> <span class="dt">Int</span> <span class="op">~</span>a (<span class="dt">SList</span> a) <span class="kw">deriving</span> <span class="dt">Show</span></span></code></pre></div>
 <p>The type of values (weak normal forms with lazy substitutions) is the
 same as before, except that we now use <code>SList</code>:</p>
-<div class="sourceCode" id="cb71"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Val6</span> <span class="ot">=</span> <span class="dt">Closure6</span> <span class="dt">Tm</span> <span class="dt">Subst6</span> <span class="op">|</span> <span class="dt">Spine6</span> <span class="dt">Int</span> (<span class="dt">SList</span> <span class="dt">Val6</span>)</span>
-<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Subst6</span> <span class="ot">=</span> <span class="dt">SList</span> <span class="dt">Val6</span></span></code></pre></div>
+<div class="sourceCode" id="cb73"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Val6</span> <span class="ot">=</span> <span class="dt">Closure6</span> <span class="dt">Tm</span> <span class="dt">Subst6</span> <span class="op">|</span> <span class="dt">Spine6</span> <span class="dt">Int</span> (<span class="dt">SList</span> <span class="dt">Val6</span>)</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Subst6</span> <span class="ot">=</span> <span class="dt">SList</span> <span class="dt">Val6</span></span></code></pre></div>
 <p>We will have more than one types that support index shifting, so this
 time let’s define a typeclass with a single member function
 <code>shift0 i v</code> that shifts all de Bruijn indices in
 <code>v</code> by <code>i</code>. (We won’t need the general case
 <code>shift x i v</code> of shifting de Bruijn indices greater than or
 equal to <code>x</code> by <code>i</code>.)</p>
-<div class="sourceCode" id="cb72"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">Shift0</span> a <span class="kw">where</span></span>
-<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  shift0 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a</span></code></pre></div>
+<div class="sourceCode" id="cb74"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">Shift0</span> a <span class="kw">where</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  shift0 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a</span></code></pre></div>
 <p>Shifting a list with lazy tags only remembers the offset
 <code>i</code> lazily without actually performing the shifting
 operations. It is clearly <code>O(1)</code>. In contrast, previously in
 <code>shift0List</code> we needed to map over the list to shift every
 element.</p>
-<div class="sourceCode" id="cb73"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">Shift0</span> (<span class="dt">SList</span> a) <span class="kw">where</span></span>
-<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  shift0 ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">SList</span> a</span>
-<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>  shift0 i <span class="dt">Nil</span> <span class="ot">=</span> <span class="dt">Nil</span></span>
-<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Cons_</span> j v vs) <span class="ot">=</span> <span class="dt">Cons_</span> (i <span class="op">+</span> j) v vs</span></code></pre></div>
+<div class="sourceCode" id="cb75"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">Shift0</span> (<span class="dt">SList</span> a) <span class="kw">where</span></span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  shift0 ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">SList</span> a</span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>  shift0 i <span class="dt">Nil</span> <span class="ot">=</span> <span class="dt">Nil</span></span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Cons_</span> j v vs) <span class="ot">=</span> <span class="dt">Cons_</span> (i <span class="op">+</span> j) v vs</span></code></pre></div>
 <p>Shifting a value is easy too. For a closure, we use
 <code>shift0</code> for <code>SList</code> to shift the lazy
 substitution, and for a spine, we shift the variable immediately and use
 <code>shift0</code> for <code>SList</code> to shift the list of
 arguments.</p>
-<div class="sourceCode" id="cb74"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> <span class="dt">Val6</span> <span class="kw">where</span></span>
-<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  shift0 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val6</span> <span class="ot">-&gt;</span> <span class="dt">Val6</span></span>
-<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Closure6</span> b sub) <span class="ot">=</span> <span class="dt">Closure6</span> b (shift0 i sub)</span>
-<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Spine6</span> j as) <span class="ot">=</span> <span class="dt">Spine6</span> (i <span class="op">+</span> j) (shift0 i as)</span></code></pre></div>
+<div class="sourceCode" id="cb76"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> <span class="dt">Val6</span> <span class="kw">where</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  shift0 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val6</span> <span class="ot">-&gt;</span> <span class="dt">Val6</span></span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Closure6</span> b sub) <span class="ot">=</span> <span class="dt">Closure6</span> b (shift0 i sub)</span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Spine6</span> j as) <span class="ot">=</span> <span class="dt">Spine6</span> (i <span class="op">+</span> j) (shift0 i as)</span></code></pre></div>
 <p>To make our life later easier, this time let’s use pattern synonyms
 of Haskell to make lazy tagging transparent. The type
 <code>ListView a</code> is the functor that captures the shape of a list
 (with lazy payloads but strict structure).</p>
-<div class="sourceCode" id="cb75"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">ListView</span> a x <span class="ot">=</span> <span class="dt">NilView</span> <span class="op">|</span> <span class="dt">ConsView</span> <span class="op">~</span>a x</span></code></pre></div>
+<div class="sourceCode" id="cb77"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">ListView</span> a x <span class="ot">=</span> <span class="dt">NilView</span> <span class="op">|</span> <span class="dt">ConsView</span> <span class="op">~</span>a x</span></code></pre></div>
 <p>A <code>SList a</code> is logically a list of <code>a</code> viewed
 from the following function, where we push the lazy tag down (c.f. the
 <code>push</code> function in the earlier example of lazy tagging for
 binary trees):</p>
-<div class="sourceCode" id="cb76"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="ot">viewSList ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">ListView</span> a (<span class="dt">SList</span> a)</span>
-<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>viewSList <span class="dt">Nil</span> <span class="ot">=</span> <span class="dt">NilView</span></span>
-<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>viewSList (<span class="dt">Cons_</span> i v vs)</span>
-<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> i <span class="op">/=</span> <span class="dv">0</span> <span class="ot">=</span> <span class="dt">ConsView</span> (shift0 i v) (shift0 i vs)</span>
-<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">=</span> <span class="dt">ConsView</span> v vs</span></code></pre></div>
+<div class="sourceCode" id="cb78"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="ot">viewSList ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">ListView</span> a (<span class="dt">SList</span> a)</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>viewSList <span class="dt">Nil</span> <span class="ot">=</span> <span class="dt">NilView</span></span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>viewSList (<span class="dt">Cons_</span> i v vs)</span>
+<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> i <span class="op">/=</span> <span class="dv">0</span> <span class="ot">=</span> <span class="dt">ConsView</span> (shift0 i v) (shift0 i vs)</span>
+<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">=</span> <span class="dt">ConsView</span> v vs</span></code></pre></div>
 <p>Now we define a pattern synonym <code>Cons v vs</code>: when we use
 the pattern <code>Cons v vs</code> to match again an element
 <code>as :: SList a</code>, it will automatically applies
@@ -1448,64 +1468,64 @@ the pattern <code>Cons v vs</code> to match again an element
 <code>SList a</code>, the lazy tag is going to be set to <code>0</code>.
 Using this pattern, the user interface of <code>SList</code> will be
 exactly the same as an ordinary list.</p>
-<div class="sourceCode" id="cb77"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pattern</span> <span class="dt">Cons</span><span class="ot"> ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">SList</span> a</span>
-<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pattern</span> <span class="dt">Cons</span> v vs <span class="ot">&lt;-</span> (viewSList <span class="ot">-&gt;</span> <span class="dt">ConsView</span> v vs) <span class="kw">where</span></span>
-<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Cons</span> <span class="op">~</span>v vs <span class="ot">=</span> <span class="dt">Cons_</span> <span class="dv">0</span> v vs</span></code></pre></div>
+<div class="sourceCode" id="cb79"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pattern</span> <span class="dt">Cons</span><span class="ot"> ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">SList</span> a</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pattern</span> <span class="dt">Cons</span> v vs <span class="ot">&lt;-</span> (viewSList <span class="ot">-&gt;</span> <span class="dt">ConsView</span> v vs) <span class="kw">where</span></span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Cons</span> <span class="op">~</span>v vs <span class="ot">=</span> <span class="dt">Cons_</span> <span class="dv">0</span> v vs</span></code></pre></div>
 <p>We will need some standard list-processing function for
 <code>SList</code> in the future, but they are easy:</p>
-<div class="sourceCode" id="cb78"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="ot">lookupSL ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> a</span>
-<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>lookupSL <span class="dt">Nil</span> _ <span class="ot">=</span> <span class="fu">error</span> <span class="st">&quot;index out of range&quot;</span></span>
-<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>lookupSL (<span class="dt">Cons</span> v vs) i <span class="ot">=</span> <span class="kw">if</span> i <span class="op">==</span> <span class="dv">0</span> <span class="kw">then</span> v <span class="kw">else</span> lookupSL vs (i<span class="op">-</span><span class="dv">1</span>)</span>
-<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a><span class="ot">foldrSL ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> r <span class="ot">-&gt;</span> r) <span class="ot">-&gt;</span> r <span class="ot">-&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> r</span>
-<span id="cb78-6"><a href="#cb78-6" aria-hidden="true" tabindex="-1"></a>foldrSL f r <span class="dt">Nil</span> <span class="ot">=</span> r</span>
-<span id="cb78-7"><a href="#cb78-7" aria-hidden="true" tabindex="-1"></a>foldrSL f r (<span class="dt">Cons</span> v vs) <span class="ot">=</span> f v (foldrSL f r vs)</span>
-<span id="cb78-8"><a href="#cb78-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-9"><a href="#cb78-9" aria-hidden="true" tabindex="-1"></a><span class="ot">dropSL ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">SList</span> a</span>
-<span id="cb78-10"><a href="#cb78-10" aria-hidden="true" tabindex="-1"></a>dropSL <span class="dv">0</span> as <span class="ot">=</span> as</span>
-<span id="cb78-11"><a href="#cb78-11" aria-hidden="true" tabindex="-1"></a>dropSL i <span class="dt">Nil</span> <span class="ot">=</span> <span class="dt">Nil</span></span>
-<span id="cb78-12"><a href="#cb78-12" aria-hidden="true" tabindex="-1"></a>dropSL i (<span class="dt">Cons</span> _ as) <span class="ot">=</span> dropSL (i<span class="op">-</span><span class="dv">1</span>) as</span></code></pre></div>
+<div class="sourceCode" id="cb80"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="ot">lookupSL ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> a</span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>lookupSL <span class="dt">Nil</span> _ <span class="ot">=</span> <span class="fu">error</span> <span class="st">&quot;index out of range&quot;</span></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>lookupSL (<span class="dt">Cons</span> v vs) i <span class="ot">=</span> <span class="kw">if</span> i <span class="op">==</span> <span class="dv">0</span> <span class="kw">then</span> v <span class="kw">else</span> lookupSL vs (i<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a><span class="ot">foldrSL ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> r <span class="ot">-&gt;</span> r) <span class="ot">-&gt;</span> r <span class="ot">-&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> r</span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>foldrSL f r <span class="dt">Nil</span> <span class="ot">=</span> r</span>
+<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a>foldrSL f r (<span class="dt">Cons</span> v vs) <span class="ot">=</span> f v (foldrSL f r vs)</span>
+<span id="cb80-8"><a href="#cb80-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-9"><a href="#cb80-9" aria-hidden="true" tabindex="-1"></a><span class="ot">dropSL ::</span> <span class="dt">Shift0</span> a <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">SList</span> a <span class="ot">-&gt;</span> <span class="dt">SList</span> a</span>
+<span id="cb80-10"><a href="#cb80-10" aria-hidden="true" tabindex="-1"></a>dropSL <span class="dv">0</span> as <span class="ot">=</span> as</span>
+<span id="cb80-11"><a href="#cb80-11" aria-hidden="true" tabindex="-1"></a>dropSL i <span class="dt">Nil</span> <span class="ot">=</span> <span class="dt">Nil</span></span>
+<span id="cb80-12"><a href="#cb80-12" aria-hidden="true" tabindex="-1"></a>dropSL i (<span class="dt">Cons</span> _ as) <span class="ot">=</span> dropSL (i<span class="op">-</span><span class="dv">1</span>) as</span></code></pre></div>
 <p>Our new weak normaliser is the same as <code>wnf3</code> except that
 it uses the new data type <code>Val6</code> for values:</p>
-<div class="sourceCode" id="cb79"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf6 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst6</span> <span class="ot">-&gt;</span> <span class="dt">Val6</span></span>
-<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>wnf6 (<span class="dt">Var</span> n) sub <span class="ot">=</span> lookupSL sub n</span>
-<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>wnf6 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure6</span> b sub</span>
-<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>wnf6 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
-<span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf6 f sub</span>
-<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf6 a sub</span>
-<span id="cb79-7"><a href="#cb79-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
-<span id="cb79-8"><a href="#cb79-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure6</span> b sub&#39; <span class="ot">-&gt;</span> wnf6 b (<span class="dt">Cons</span> a&#39; sub&#39;)</span>
-<span id="cb79-9"><a href="#cb79-9" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine6</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine6</span> v (<span class="dt">Cons</span> a&#39; as)</span></code></pre></div>
+<div class="sourceCode" id="cb81"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf6 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst6</span> <span class="ot">-&gt;</span> <span class="dt">Val6</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>wnf6 (<span class="dt">Var</span> n) sub <span class="ot">=</span> lookupSL sub n</span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>wnf6 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure6</span> b sub</span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>wnf6 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf6 f sub</span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> wnf6 a sub</span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> f&#39; <span class="kw">of</span></span>
+<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure6</span> b sub&#39; <span class="ot">-&gt;</span> wnf6 b (<span class="dt">Cons</span> a&#39; sub&#39;)</span>
+<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine6</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine6</span> v (<span class="dt">Cons</span> a&#39; as)</span></code></pre></div>
 <p>Similarly <code>reify6</code> is the same as <code>reify2</code>
 except it uses the new data type <code>Val6</code>:</p>
-<div class="sourceCode" id="cb80"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify6 ::</span> <span class="dt">Val6</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>reify6 (<span class="dt">Closure6</span> t sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify6 (wnf6 t (<span class="dt">Cons</span> (<span class="dt">Spine6</span> <span class="dv">0</span> <span class="dt">Nil</span>) (shift0 <span class="dv">1</span> sub))))</span>
-<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>reify6 (<span class="dt">Spine6</span> v as) <span class="ot">=</span> foldrSL (\a r <span class="ot">-&gt;</span> r <span class="ot">`App`</span> reify6 a) (<span class="dt">Var</span> v) as</span></code></pre></div>
+<div class="sourceCode" id="cb82"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify6 ::</span> <span class="dt">Val6</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>reify6 (<span class="dt">Closure6</span> t sub) <span class="ot">=</span> <span class="dt">Abs</span> (reify6 (wnf6 t (<span class="dt">Cons</span> (<span class="dt">Spine6</span> <span class="dv">0</span> <span class="dt">Nil</span>) (shift0 <span class="dv">1</span> sub))))</span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>reify6 (<span class="dt">Spine6</span> v as) <span class="ot">=</span> foldrSL (\a r <span class="ot">-&gt;</span> r <span class="ot">`App`</span> reify6 a) (<span class="dt">Var</span> v) as</span></code></pre></div>
 <p>The function <code>reflect6</code> is the same as
 <code>reflect2</code>:</p>
-<div class="sourceCode" id="cb81"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect6 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst6</span></span>
-<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>reflect6 n <span class="ot">=</span> <span class="fu">foldr</span> (\x rs <span class="ot">-&gt;</span> <span class="dt">Cons</span> (<span class="dt">Spine6</span> x <span class="dt">Nil</span>) rs) <span class="dt">Nil</span> [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
+<div class="sourceCode" id="cb83"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect6 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Subst6</span></span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>reflect6 n <span class="ot">=</span> <span class="fu">foldr</span> (\x rs <span class="ot">-&gt;</span> <span class="dt">Cons</span> (<span class="dt">Spine6</span> x <span class="dt">Nil</span>) rs) <span class="dt">Nil</span> [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
 <p>These give us the new normaliser <code>nf6</code>, which is
 defunctional NbE with de Bruijn indices (rather than levels). Because of
 lazy tagging, the shift operations have <code>O(1)</code> complexity, so
 this version has the same asymptotic complexity as <code>nf5</code> (the
 version using de Bruijn levels) on all input, but of course the constant
 factor <code>nf6</code> is slightly bigger than <code>nf6</code>.</p>
-<div class="sourceCode" id="cb82"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf6 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>nf6 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
-<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify6 (wnf6 t (reflect6 n))</span>
-<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf6 ((cmul `App` c2 `App` (cinc `App` c2)) `App` Var 0 `App` Var 1)</span></span>
-<span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- x1 (x1 (x1 (x1 (x1 (x1 x0)))))</span></span>
-<span id="cb82-7"><a href="#cb82-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-8"><a href="#cb82-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf6 (cmul `App` c2 `App` (cinc `App` c2))</span></span>
-<span id="cb82-9"><a href="#cb82-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 x1)))))</span></span></code></pre></div>
+<div class="sourceCode" id="cb84"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf6 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>nf6 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
+<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> reify6 (wnf6 t (reflect6 n))</span>
+<span id="cb84-4"><a href="#cb84-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb84-5"><a href="#cb84-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf6 ((cmul `App` c2 `App` (cinc `App` c2)) `App` Var 0 `App` Var 1)</span></span>
+<span id="cb84-6"><a href="#cb84-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- x1 (x1 (x1 (x1 (x1 (x1 x0)))))</span></span>
+<span id="cb84-7"><a href="#cb84-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb84-8"><a href="#cb84-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf6 (cmul `App` c2 `App` (cinc `App` c2))</span></span>
+<span id="cb84-9"><a href="#cb84-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. \x1. x0 (x0 (x0 (x0 (x0 (x0 x1)))))</span></span></code></pre></div>
 <h1 data-number="14" id="nbe-with-shared-normal-forms"><span
 class="header-section-number">14</span> NbE with shared normal
 forms</h1>
@@ -1521,10 +1541,10 @@ additional constructor <code>Cached7 t v</code>, where <code>t</code> is
 (a thunk of) the normal form of the value <code>v</code>. We shall have
 the invariant that <code>Cached</code> is never nested, i.e.
 <code>Cached _ (Cached _ _)</code> is not allowed.</p>
-<div class="sourceCode" id="cb83"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Val7</span> <span class="ot">=</span> <span class="dt">Closure7</span> <span class="dt">Tm</span> <span class="dt">Subst7</span> <span class="op">|</span> <span class="dt">Spine7</span> <span class="dt">Int</span> (<span class="dt">SList</span> <span class="dt">Val7</span>)</span>
-<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>          <span class="op">|</span> <span class="dt">Cached7</span> <span class="op">~</span><span class="dt">TmS</span> <span class="dt">Val7</span></span>
-<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Subst7</span> <span class="ot">=</span> <span class="dt">SList</span> <span class="dt">Val7</span></span></code></pre></div>
+<div class="sourceCode" id="cb85"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Val7</span> <span class="ot">=</span> <span class="dt">Closure7</span> <span class="dt">Tm</span> <span class="dt">Subst7</span> <span class="op">|</span> <span class="dt">Spine7</span> <span class="dt">Int</span> (<span class="dt">SList</span> <span class="dt">Val7</span>)</span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>          <span class="op">|</span> <span class="dt">Cached7</span> <span class="op">~</span><span class="dt">TmS</span> <span class="dt">Val7</span></span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Subst7</span> <span class="ot">=</span> <span class="dt">SList</span> <span class="dt">Val7</span></span></code></pre></div>
 <p>Up to now, we have always used the type <code>Tm</code> of terms to
 store normal forms, but this time we are going to put normal forms in
 lazy substitutions so we need a new version of <code>Tm</code> that
@@ -1532,58 +1552,58 @@ supports lazy shifting. To do this, we modify the constructors
 <code>Abs</code> and <code>App</code> of <code>Tm</code> to store an
 additional integer lazy tag (an integer <code>i</code> means that
 <code>shift0 i</code> has been logically applied to this term):</p>
-<div class="sourceCode" id="cb84"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Terms with lazy tagging for `shift0 i`</span></span>
-<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">TmS</span> <span class="ot">=</span> <span class="dt">AbsS</span> <span class="dt">Int</span> <span class="dt">TmS</span> <span class="op">|</span> <span class="dt">AppS</span> <span class="dt">Int</span> <span class="dt">TmS</span> <span class="dt">TmS</span> <span class="op">|</span> <span class="dt">VarS</span> <span class="dt">Int</span></span></code></pre></div>
+<div class="sourceCode" id="cb86"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Terms with lazy tagging for `shift0 i`</span></span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">TmS</span> <span class="ot">=</span> <span class="dt">AbsS</span> <span class="dt">Int</span> <span class="dt">TmS</span> <span class="op">|</span> <span class="dt">AppS</span> <span class="dt">Int</span> <span class="dt">TmS</span> <span class="dt">TmS</span> <span class="op">|</span> <span class="dt">VarS</span> <span class="dt">Int</span></span></code></pre></div>
 <p>Shifting is again <code>O(1)</code> because we just need to
 accumulate it in the lazy tags:</p>
-<div class="sourceCode" id="cb85"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> <span class="dt">TmS</span> <span class="kw">where</span></span>
-<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">AbsS</span> j b) <span class="ot">=</span> <span class="dt">AbsS</span> (i <span class="op">+</span> j) b</span>
-<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">AppS</span> j f a) <span class="ot">=</span> <span class="dt">AppS</span> (i <span class="op">+</span> j)  f a</span>
-<span id="cb85-4"><a href="#cb85-4" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">VarS</span> j) <span class="ot">=</span> <span class="dt">VarS</span> (i <span class="op">+</span> j)</span></code></pre></div>
+<div class="sourceCode" id="cb87"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> <span class="dt">TmS</span> <span class="kw">where</span></span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">AbsS</span> j b) <span class="ot">=</span> <span class="dt">AbsS</span> (i <span class="op">+</span> j) b</span>
+<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">AppS</span> j f a) <span class="ot">=</span> <span class="dt">AppS</span> (i <span class="op">+</span> j)  f a</span>
+<span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">VarS</span> j) <span class="ot">=</span> <span class="dt">VarS</span> (i <span class="op">+</span> j)</span></code></pre></div>
 <p>Similarly, shifting a value is <code>O(1)</code> because
 <code>shift0</code> for <code>SList a</code> and <code>Tms</code> is
 O(1) and there is no two consecutive layers of <code>Cached</code>:</p>
-<div class="sourceCode" id="cb86"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> <span class="dt">Val7</span> <span class="kw">where</span></span>
-<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  shift0 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span></span>
-<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Closure7</span> b sub) <span class="ot">=</span> <span class="dt">Closure7</span> b (shift0 i sub)</span>
-<span id="cb86-4"><a href="#cb86-4" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Spine7</span> j as) <span class="ot">=</span> <span class="dt">Spine7</span> (i <span class="op">+</span> j) (shift0 i as)</span>
-<span id="cb86-5"><a href="#cb86-5" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Cached7</span> n v) <span class="ot">=</span> <span class="dt">Cached7</span> (shift0 i n) (shift0 i v)</span></code></pre></div>
+<div class="sourceCode" id="cb88"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> <span class="dt">Val7</span> <span class="kw">where</span></span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  shift0 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span></span>
+<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Closure7</span> b sub) <span class="ot">=</span> <span class="dt">Closure7</span> b (shift0 i sub)</span>
+<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Spine7</span> j as) <span class="ot">=</span> <span class="dt">Spine7</span> (i <span class="op">+</span> j) (shift0 i as)</span>
+<span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>  shift0 i (<span class="dt">Cached7</span> n v) <span class="ot">=</span> <span class="dt">Cached7</span> (shift0 i n) (shift0 i v)</span></code></pre></div>
 <p>Let’s define two auxiliary functions for ignoring and preparing
 cached normal forms of values:</p>
-<div class="sourceCode" id="cb87"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="ot">ignoreCache ::</span> <span class="dt">Val7</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span></span>
-<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>ignoreCache (<span class="dt">Cached7</span> _ v) <span class="ot">=</span> v</span>
-<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>ignoreCache v <span class="ot">=</span> v</span>
-<span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-5"><a href="#cb87-5" aria-hidden="true" tabindex="-1"></a><span class="ot">makeCache ::</span> <span class="dt">Val7</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span></span>
-<span id="cb87-6"><a href="#cb87-6" aria-hidden="true" tabindex="-1"></a>makeCache v<span class="op">@</span>(<span class="dt">Cached7</span> _ _) <span class="ot">=</span> v</span>
-<span id="cb87-7"><a href="#cb87-7" aria-hidden="true" tabindex="-1"></a>makeCache v <span class="ot">=</span> <span class="dt">Cached7</span> (reify7 v) v</span></code></pre></div>
+<div class="sourceCode" id="cb89"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="ot">ignoreCache ::</span> <span class="dt">Val7</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>ignoreCache (<span class="dt">Cached7</span> _ v) <span class="ot">=</span> v</span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>ignoreCache v <span class="ot">=</span> v</span>
+<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a><span class="ot">makeCache ::</span> <span class="dt">Val7</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span></span>
+<span id="cb89-6"><a href="#cb89-6" aria-hidden="true" tabindex="-1"></a>makeCache v<span class="op">@</span>(<span class="dt">Cached7</span> _ _) <span class="ot">=</span> v</span>
+<span id="cb89-7"><a href="#cb89-7" aria-hidden="true" tabindex="-1"></a>makeCache v <span class="ot">=</span> <span class="dt">Cached7</span> (reify7 v) v</span></code></pre></div>
 <p>Our new weak normaliser now makes cached normal forms for function
 arguments (and ignores the cached normal forms for functions):</p>
-<div class="sourceCode" id="cb88"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf7 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst7</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span></span>
-<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>wnf7 (<span class="dt">Var</span> n) sub <span class="ot">=</span> lookupSL sub n</span>
-<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a>wnf7 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure7</span> b sub</span>
-<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>wnf7 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
-<span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf7 f sub</span>
-<span id="cb88-6"><a href="#cb88-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> makeCache (wnf7 a sub)</span>
-<span id="cb88-7"><a href="#cb88-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> ignoreCache f&#39; <span class="kw">of</span></span>
-<span id="cb88-8"><a href="#cb88-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure7</span> b sub&#39; <span class="ot">-&gt;</span> wnf7 b (<span class="dt">Cons</span> a&#39; sub&#39;)</span>
-<span id="cb88-9"><a href="#cb88-9" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine7</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine7</span> v (<span class="dt">Cons</span> a&#39; as)</span></code></pre></div>
+<div class="sourceCode" id="cb90"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf7 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst7</span> <span class="ot">-&gt;</span> <span class="dt">Val7</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a>wnf7 (<span class="dt">Var</span> n) sub <span class="ot">=</span> lookupSL sub n</span>
+<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a>wnf7 (<span class="dt">Abs</span> b) sub <span class="ot">=</span> <span class="dt">Closure7</span> b sub</span>
+<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a>wnf7 (<span class="dt">App</span> f a) sub <span class="ot">=</span></span>
+<span id="cb90-5"><a href="#cb90-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> f&#39; <span class="ot">=</span> wnf7 f sub</span>
+<span id="cb90-6"><a href="#cb90-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">~</span>a&#39; <span class="ot">=</span> makeCache (wnf7 a sub)</span>
+<span id="cb90-7"><a href="#cb90-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="kw">case</span> ignoreCache f&#39; <span class="kw">of</span></span>
+<span id="cb90-8"><a href="#cb90-8" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Closure7</span> b sub&#39; <span class="ot">-&gt;</span> wnf7 b (<span class="dt">Cons</span> a&#39; sub&#39;)</span>
+<span id="cb90-9"><a href="#cb90-9" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Spine7</span> v as <span class="ot">-&gt;</span> <span class="dt">Spine7</span> v (<span class="dt">Cons</span> a&#39; as)</span></code></pre></div>
 <p>When we reify a value, we can use a cached normal form when there is
 one, otherwise everything stays the same as <code>reify6</code>:</p>
-<div class="sourceCode" id="cb89"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify7 ::</span> <span class="dt">Val7</span> <span class="ot">-&gt;</span> <span class="dt">TmS</span></span>
-<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>reify7 (<span class="dt">Closure7</span> t sub) <span class="ot">=</span> <span class="dt">AbsS</span> <span class="dv">0</span> (reify7 (wnf7 t (<span class="dt">Cons</span> (<span class="dt">Spine7</span> <span class="dv">0</span> <span class="dt">Nil</span>) (shift0 <span class="dv">1</span> sub))))</span>
-<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>reify7 (<span class="dt">Spine7</span> v as) <span class="ot">=</span> foldrSL (\a r <span class="ot">-&gt;</span> <span class="dt">AppS</span> <span class="dv">0</span> r (reify7 a)) (<span class="dt">VarS</span> v) as</span>
-<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a>reify7 (<span class="dt">Cached7</span> c _) <span class="ot">=</span> c</span></code></pre></div>
+<div class="sourceCode" id="cb91"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reify7 ::</span> <span class="dt">Val7</span> <span class="ot">-&gt;</span> <span class="dt">TmS</span></span>
+<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a>reify7 (<span class="dt">Closure7</span> t sub) <span class="ot">=</span> <span class="dt">AbsS</span> <span class="dv">0</span> (reify7 (wnf7 t (<span class="dt">Cons</span> (<span class="dt">Spine7</span> <span class="dv">0</span> <span class="dt">Nil</span>) (shift0 <span class="dv">1</span> sub))))</span>
+<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a>reify7 (<span class="dt">Spine7</span> v as) <span class="ot">=</span> foldrSL (\a r <span class="ot">-&gt;</span> <span class="dt">AppS</span> <span class="dv">0</span> r (reify7 a)) (<span class="dt">VarS</span> v) as</span>
+<span id="cb91-4"><a href="#cb91-4" aria-hidden="true" tabindex="-1"></a>reify7 (<span class="dt">Cached7</span> c _) <span class="ot">=</span> c</span></code></pre></div>
 <p>Reflection doesn’t change at all:</p>
-<div class="sourceCode" id="cb90"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect7 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">SList</span> <span class="dt">Val7</span></span>
-<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a>reflect7 n <span class="ot">=</span> <span class="fu">foldr</span> (\x rs <span class="ot">-&gt;</span> <span class="dt">Cons</span> (<span class="dt">Spine7</span> x <span class="dt">Nil</span>) rs) <span class="dt">Nil</span> [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
+<div class="sourceCode" id="cb92"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="ot">reflect7 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">SList</span> <span class="dt">Val7</span></span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>reflect7 n <span class="ot">=</span> <span class="fu">foldr</span> (\x rs <span class="ot">-&gt;</span> <span class="dt">Cons</span> (<span class="dt">Spine7</span> x <span class="dt">Nil</span>) rs) <span class="dt">Nil</span> [<span class="dv">0</span> <span class="op">..</span> n]</span></code></pre></div>
 <p>With these ingredients, our new normaliser is again
 <code>reify7 (wnf7 t (reflect7 n)</code>. Wait! Now <code>reify7</code>
 produces an element of <code>TmS</code>, a normal form containing lazy
@@ -1593,111 +1613,142 @@ shifts, and of course what we really want is a normal form of type
 in the resulting normal form (of type <code>TmS</code>) and produces a
 normal form (of type <code>Tm</code>) that doesn’t have lazy shifts.</p>
 <p>This function doesn’t sound hard, does it? It turns out this function
-is in fact rather difficult to get efficient… We don’t want this
+is in fact a bit tricky to get efficient… We don’t want this
 <code>forceShifts</code> function to be more expensive than the actual
 normalisation process itself, so the naive implementation below isn’t
 good enough:</p>
-<div class="sourceCode" id="cb91"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="ot">forceShiftsSpec ::</span> <span class="dt">TmS</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a>forceShiftsSpec (<span class="dt">VarS</span> v) <span class="ot">=</span> <span class="dt">Var</span> v</span>
-<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a>forceShiftsSpec (<span class="dt">AbsS</span> i b) <span class="ot">=</span></span>
-<span id="cb91-4"><a href="#cb91-4" aria-hidden="true" tabindex="-1"></a>  shift <span class="dv">0</span> i (<span class="dt">Abs</span> (forceShiftsSpec b))</span>
-<span id="cb91-5"><a href="#cb91-5" aria-hidden="true" tabindex="-1"></a>forceShiftsSpec (<span class="dt">AppS</span> i f a) <span class="ot">=</span></span>
-<span id="cb91-6"><a href="#cb91-6" aria-hidden="true" tabindex="-1"></a>  shift <span class="dv">0</span> i (<span class="dt">App</span> (forceShiftsSpec f) (forceShiftsSpec a))</span></code></pre></div>
-<p>The difficulty here is that we can’t reduce the composition of two
-shifting operations into a single one. We do have
-<code>shift 0 i . shift 0 j = shift 0 (i + j)</code>, but unfortunately
-for the case of <code>AbsS i b</code> above, we have a lambda
-abstraction, and <code>shift 0 i (Abs b)</code> becomes
-<code>Abs (shift 1 i b)</code>. In general, the composition of two
-shifts isn’t equal to a single shift:</p>
-<pre><code>shift x i . shift y j  =/=  shift _ _</code></pre>
-<p>At the moment, I do have an idea of implementing
-<code>forceShifts</code> with linear complexity, but it needs some very
-fancy data structure. I don’t think this idea is the right way to do it,
-but for now it is what I have so let me explain it still.</p>
-<p>The idea is that we can represent any function
-<code>S : Int -&gt; Int</code> transforming de Brujn indices as a
-sequence:</p>
-<pre><code>ss = [s0, s1, ..., sN]</code></pre>
-<p>which says that the variable of de Bruijn index <code>0</code> should
-be transformed to <code>s0</code>, the the variable of de Bruijn index
-<code>1</code> should be transformed to <code>s1</code>, etc. Therefore
-the function <code>S</code> is just <code>S v  = ss ! v</code>. Then the
-crucial observation is that the composition <code>S . shift 0 i</code>
-is</p>
-<pre><code>(S . shift 0 i) v = S (v + i) = ss ! (v + i) = (drop i ss) ! v</code></pre>
-<p>That is to say, the composite function <code>S . shift 0 i</code> can
-be represented by the sequence <code>drop i ss</code>. Similarly, when
-we descend from the context of <code>Abs b</code> to the context of
-<code>b</code>, the sequence that represents the function <code>S</code>
-changes from <code>ss</code> to <code>0 : map (1+) ss</code>.</p>
-<p>Therefore to maintain a compact representation of composites of
-shifting functions, we need a <em>persistent</em> data structure that
-maintains a sequence of integers with the following operations:</p>
-<ol type="1">
-<li>pushing a <code>0</code> to the head of the sequence,</li>
-<li>adding 1 to all the integers in sequence,</li>
-<li>dropping the first <code>i</code> elements of the sequence for any
-given integer <code>i</code>.</li>
-</ol>
-<p>We may call this interface ‘persistent stack with <em>bulk</em> pop’.
-Our lazy tagging list <code>SList Int</code> supports the first two
-operations in O(1) and the third operation in <code>O(i)</code>. The
-version of <code>forceShifts</code> with <code>SList Int</code> is then
-as follows.</p>
-<div class="sourceCode" id="cb95"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> <span class="dt">Int</span> <span class="kw">where</span></span>
-<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>  shift0 i j <span class="ot">=</span> i <span class="op">+</span> j</span>
-<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a><span class="ot">forceShifts ::</span> <span class="dt">SList</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">TmS</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb95-5"><a href="#cb95-5" aria-hidden="true" tabindex="-1"></a>forceShifts ss (<span class="dt">VarS</span> v) <span class="ot">=</span> <span class="dt">Var</span> (lookupSL ss v)</span>
-<span id="cb95-6"><a href="#cb95-6" aria-hidden="true" tabindex="-1"></a>forceShifts ss (<span class="dt">AbsS</span> i b) <span class="ot">=</span></span>
-<span id="cb95-7"><a href="#cb95-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> ss&#39; <span class="ot">=</span> <span class="dt">Cons</span> <span class="dv">0</span> (shift0 <span class="dv">1</span> (dropSL i ss))</span>
-<span id="cb95-8"><a href="#cb95-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="dt">Abs</span> (forceShifts ss&#39; b)</span>
-<span id="cb95-9"><a href="#cb95-9" aria-hidden="true" tabindex="-1"></a>forceShifts ss (<span class="dt">AppS</span> i f a) <span class="ot">=</span></span>
-<span id="cb95-10"><a href="#cb95-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> ss&#39; <span class="ot">=</span> dropSL i ss</span>
-<span id="cb95-11"><a href="#cb95-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="dt">App</span> (forceShifts ss&#39; f)</span>
-<span id="cb95-12"><a href="#cb95-12" aria-hidden="true" tabindex="-1"></a>         (forceShifts ss&#39; a)</span></code></pre></div>
-<p>This gives us the new normaliser, normalisation by evaluation with
-shared normal forms:</p>
+<div class="sourceCode" id="cb93"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="ot">forceShiftsSpec ::</span> <span class="dt">TmS</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>forceShiftsSpec (<span class="dt">VarS</span> v) <span class="ot">=</span> <span class="dt">Var</span> v</span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a>forceShiftsSpec (<span class="dt">AbsS</span> i b) <span class="ot">=</span></span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>  shift <span class="dv">0</span> i (<span class="dt">Abs</span> (forceShiftsSpec b))</span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a>forceShiftsSpec (<span class="dt">AppS</span> i f a) <span class="ot">=</span></span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a>  shift <span class="dv">0</span> i (<span class="dt">App</span> (forceShiftsSpec f) (forceShiftsSpec a))</span></code></pre></div>
+<p>I struggled for a quite while to come up with the right way to do
+this <em>forceShifts</em>, and in the <a
+href="https://yangzhixuan.github.io/NbEv1.html">initial version</a> of
+this article I fact did it in a not very good way, which is linear in
+the size of of the input only when we use a very fancy data structure.
+However, after posting the initial version I came up with the following
+a lot simpler idea.</p>
+<p>The key idea is to shift our understanding of
+<code>shift 0 i t</code> from <em>adding <code>i</code> to all the de
+Bruijn indices in <code>t</code></em> to <em>a de Bruijn variable in
+<code>t</code> should skip <code>i</code>-levels to find its
+corresponding binder</em>. Imagine we are a variable of de Bruijn index
+<code>v</code>; to find the corresponding binder, we need to count
+inside out to find the <code>v+1</code>-th lambda abstraction. When we
+see <code>shift 0 i</code>, it means that we should skip the next
+<code>i</code>-levels in our counting.</p>
+<p>Let me explain this more concretely with an example. Consider the
+term <code>t :: TmS</code> with lazy shifts:</p>
+<pre><code>t = AbsS 0 (AbsS 0 (AbsS 0 (AppS 7 (AbsS 3 (Var 2)) ...)))</code></pre>
+<p>To forces the lazy shifts stored in <code>t :: TmS</code> to the
+variables in <code>t</code>, we will traverse <code>t</code> to find its
+variables, and along the way, we will keep track of the structure of
+shifts and abstractions from the root to the variable. In the path from
+the root of the term to the position of <code>Var 2</code>, we have the
+following sequence of lambda abstractions and level skips:</p>
+<pre><code>Abs, Abs, Abs, Skip 7, Skip 3, Abs</code></pre>
+<p>To find the corresponding binder of <code>Var 2</code>, we as usual
+need to count 3 lambda abstractions inside out staring from the
+variable. We first count the innermost <code>Abs</code> (the one at the
+end of the sequence), and we have 2 more abstractions to count. Then we
+see <code>Skip 3</code>, which means we shall directly <em>skip</em> 3
+levels. Next, we see <code>Skip 7</code>, so skip 7 more levels (does
+anyone remember the feeling of hitting a jetpack in the video game <a
+href="https://en.wikipedia.org/wiki/Doodle_Jump">Doodle Jump</a>?).
+Finally we count 2 more abstractions in the sequence. In this process,
+we have skipped or counted <code>1 + 3 + 7 + 2 = 13</code> lambda
+abstractions. Therefore the de Bruijn index <code>2</code> should be
+adjusted to <code>13 - 1 = 12</code> (<code>-1</code> because de Bruijn
+indices start from <code>0</code>).</p>
+<p>We will represent a sequence of skips and bindings using the
+following datatype:</p>
 <div class="sourceCode" id="cb96"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf7 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>nf7 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
-<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>            ss <span class="ot">=</span> <span class="fu">foldr</span> (\v rs <span class="ot">-&gt;</span> <span class="dt">Cons</span> v rs) <span class="dt">Nil</span> [<span class="dv">0</span> <span class="op">..</span> n]</span>
-<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> forceShifts ss (reify7 (wnf7 t (reflect7 n)))</span></code></pre></div>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">BindSkip</span> <span class="ot">=</span> <span class="dt">Root</span> <span class="op">|</span> <span class="dt">Skip</span> <span class="dt">Int</span> <span class="dt">BindSkip</span> <span class="op">|</span> <span class="dt">Bind</span> <span class="dt">Int</span> <span class="dt">BindSkip</span></span></code></pre></div>
+<p>for which we will ensure that <code>Skip _ (Skip _ _)</code> and
+<code>Bind _ (Bind _ _)</code> never happen, and the integers stored in
+the sequence must be positive, except that <code>Bind 0 Root</code> is
+allowed.</p>
+<p>The following two functions push <code>i</code> skips or bindings to
+the sequence. Both of them are evidently <code>O(1)</code>.</p>
+<div class="sourceCode" id="cb97"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="ot">skip ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span></span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>skip <span class="dv">0</span> bs <span class="ot">=</span> bs</span>
+<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>skip i (<span class="dt">Skip</span> j bs) <span class="ot">=</span> <span class="dt">Skip</span> (i <span class="op">+</span> j) bs</span>
+<span id="cb97-4"><a href="#cb97-4" aria-hidden="true" tabindex="-1"></a>skip i bs <span class="ot">=</span> <span class="dt">Skip</span> i bs</span>
+<span id="cb97-5"><a href="#cb97-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb97-6"><a href="#cb97-6" aria-hidden="true" tabindex="-1"></a><span class="ot">bind ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span></span>
+<span id="cb97-7"><a href="#cb97-7" aria-hidden="true" tabindex="-1"></a>bind <span class="dv">0</span> bs <span class="ot">=</span> bs</span>
+<span id="cb97-8"><a href="#cb97-8" aria-hidden="true" tabindex="-1"></a>bind i (<span class="dt">Bind</span> j bs) <span class="ot">=</span> <span class="dt">Bind</span> (i <span class="op">+</span> j) bs</span>
+<span id="cb97-9"><a href="#cb97-9" aria-hidden="true" tabindex="-1"></a>bind i bs <span class="ot">=</span> <span class="dt">Bind</span> i bs</span></code></pre></div>
+<p>The <code>forceShifts</code> function that we wanted traverses a
+term, keep tracking the sequence of bindings and skips from the root to
+the current position in the process, and adjusts the variable using the
+binding/skipping sequence:</p>
+<div class="sourceCode" id="cb98"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="ot">forceShifts ::</span> <span class="dt">BindSkip</span> <span class="ot">-&gt;</span> <span class="dt">TmS</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>forceShifts bs (<span class="dt">AbsS</span> i b) <span class="ot">=</span></span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> bs&#39; <span class="ot">=</span> bind <span class="dv">1</span> (skip i bs)</span>
+<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="dt">Abs</span> (forceShifts bs&#39; b)</span>
+<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a>forceShifts bs (<span class="dt">AppS</span> i f a) <span class="ot">=</span></span>
+<span id="cb98-6"><a href="#cb98-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> bs&#39; <span class="ot">=</span> skip i bs</span>
+<span id="cb98-7"><a href="#cb98-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="dt">App</span> (forceShifts bs&#39; f) (forceShifts bs&#39; a)</span>
+<span id="cb98-8"><a href="#cb98-8" aria-hidden="true" tabindex="-1"></a>forceShifts bs (<span class="dt">VarS</span> v) <span class="ot">=</span> <span class="dt">Var</span> (doodleJump v bs)</span></code></pre></div>
+<p>where <code>doodleJump v bs</code> is the function doing the process
+of counting abstractions along a sequence <code>bs :: BindSkip</code> of
+abstractions/skips that I explained above:</p>
+<div class="sourceCode" id="cb99"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="ot">doodleJump ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span> <span class="ot">-&gt;</span> <span class="dt">Int</span></span>
+<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>doodleJump i <span class="dt">Root</span> <span class="ot">=</span> <span class="fu">error</span> <span class="st">&quot;variable out of bounds&quot;</span></span>
+<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>doodleJump i (<span class="dt">Skip</span> j bs) <span class="ot">=</span> doodleJump i bs <span class="op">+</span> j</span>
+<span id="cb99-4"><a href="#cb99-4" aria-hidden="true" tabindex="-1"></a>doodleJump i (<span class="dt">Bind</span> j bs)</span>
+<span id="cb99-5"><a href="#cb99-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> i <span class="op">&lt;</span> j <span class="ot">=</span> i</span>
+<span id="cb99-6"><a href="#cb99-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">=</span> j <span class="op">+</span> doodleJump (i <span class="op">-</span> j) bs</span></code></pre></div>
+<p>Finally, we have our new normaliser, normalisation by evaluation with
+shared normal forms:</p>
+<div class="sourceCode" id="cb100"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf7 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>nf7 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
+<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>            bs <span class="ot">=</span> bind (n<span class="op">+</span><span class="dv">1</span>) <span class="dt">Root</span></span>
+<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>         <span class="kw">in</span> forceShifts bs (reify7 (wnf7 t (reflect7 n)))</span></code></pre></div>
 <p>Indeed, <code>nf7</code> is much faster on the
 <code>nbeAdversarialExploit</code> program that <code>nf5</code> was
 slow:</p>
-<div class="sourceCode" id="cb97"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf7 nbeAdversarialExploit)</span></span>
-<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span></code></pre></div>
-<p>However, our <code>SList Int</code> is too slow for dropping the
-first <code>i</code> elements. A better implementation of stack with
-bulk pop would be using balanced trees that support
-<code>log</code>-time splitting, such as finger trees or red-black
-trees, which will give us an <code>O(log i)</code>-time implementation
-of dropping <code>i</code> elements. In our concrete application,
-<code>i</code> is bound by the <em>depth</em> of lambda abstractions, so
-<code>i</code> will not be too big in practice.</p>
-<p>However, if we want to have a version of <code>nf7</code> that has
-better or equal asymptotic complexity as NbE on all families of input
-programs, we need a linear implementation of <code>forceShifts</code>,
-which needs all three operations (push, bulk pop, add) to be
-<code>O(1)</code> if we implement <code>forceShifts</code> like the one
-above.</p>
-<p>I do know the existence of such a data structure in the literature,
-namely the one in the paper <a
-href="https://link.springer.com/chapter/10.1007/3-540-45022-X_8">Improved
-Algorithms for Finding Level Ancestors in Dynamic Trees</a> by Alstrup
-and Holm. However, this data structure is rather fancy so we won’t
-implement it here.</p>
-<p>Also, I don’t believe that our current way of implementing
-<code>nf7</code> is the right one. Bureaucratic matters such as variable
-shifting should <em>never</em> be a limiting factor in the
-normalisation. There must be some way to implement NbE with shared
-normal forms without the complex shifting algorithm discussed above. I
-will think about this in the future, and if the reader knows how to do
-it, please let me know too!</p>
+<div class="sourceCode" id="cb101"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf7 nbeAdversarialExploit)</span></span>
+<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span></code></pre></div>
+<p>After the initial version of this article was put online, <a
+href="https://andraskovacs.github.io">András Kovács</a> pointed out to
+me that the normaliser <code>nf7</code> (what I called NbE with shared
+normal forms) is known as <em>strong call-by-need evaluation</em> in the
+literature, such as in <a href="https://arxiv.org/abs/2603.21949">this
+paper</a> by Biernacka et al, where ‘strong’ refers to normalising under
+binders. Also, Biernacka et. al. implement such a normaliser using
+<em>(freshly) named variables</em> in values rather than de Bruijn
+indices, because shifting names is no-op (and normal forms with named
+variables can always be convereted back de Bruijn indices easily).
+Arguably this is a simpler way to do <code>nf7</code> than what we did
+here (time-complexity-wise they are the same). However, I think the our
+<code>nf7</code> is cute so I decided to keep it in this article – it
+shows how far we can go with only the trick of lazy tagging and some
+elementary analysis of the bottlenecks in normalisation.</p>
+<p><strong>Editing History</strong></p>
+<ul>
+<li><p>v2 (23 Apr, 2026): this is the version you are viewing now; <a
+href="https://yangzhixuan.github.io/NbE.hs">source code</a>.</p>
+<ol type="1">
+<li><p>Fix a bug in v1: although the argument <code>a</code> is marked
+with <code>~</code> to be lazy, it is passed to a <em>strict</em>
+function <code>beta</code>. Now a lazy version of <code>betaL</code> is
+added.</p></li>
+<li><p>Add the discussion of doing <code>nf7</code> with named variables
+that András Kovács brought to my attention.</p></li>
+</ol></li>
+<li><p>v1 (22 Apr, 2026): initial version; <a
+href="https://yangzhixuan.github.io/NbEv1.html">rendered HTML</a> and <a
+href="https://yangzhixuan.github.io/NbEv1.hs">source code</a>.</p></li>
+</ul>
 </body>
 </html>
