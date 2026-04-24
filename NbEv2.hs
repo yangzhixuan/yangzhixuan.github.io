@@ -2,7 +2,7 @@
 
 % An Algorithmic Reconstruction of Normalisation by Evaluation
 % Zhixuan Yang, the University of Exeter
-% Apr 24, 2026
+% Apr 23, 2026
 
 
 In the past a few years, I spent quite a lot of time on learning the categorical glueing
@@ -82,7 +82,7 @@ Otherwise you can skim over the definitions and go to [the next
 section](#naive-normaliser); nothing unusual here.
 -}
 
-data Tm = Var Int | App Tm Tm | Abs Tm deriving (Show, Eq)
+data Tm = Var Int | App Tm Tm | Abs Tm deriving Eq
 
 infixl `App`
 
@@ -129,8 +129,8 @@ showTm ns (App f a) =
       s2' = if p2 > 50  then s2 else "(" ++ s2 ++ ")"
   in (s1' ++ " " ++ s2', 50)
 
--- instance Show Tm where
---   show t = let n = fv t in fst (showTm (n+1) t)
+instance Show Tm where
+  show t = let n = fv t in fst (showTm (n+1) t)
 
 -- >>> Abs (Var 0 `App` Var 0)
 -- \x0. x0 x0
@@ -398,7 +398,7 @@ Note that the variable `a'` is annotated with `~`, which makes `a'` lazily evalu
 need to use a version of `beta` that is lazy in its second argument. Until
 someone designs 'strictness polymorphism' and implements it in GHC, we have no
 choice but to duplicate our `beta` and `subst` functions with a `~` annotation
-in the arguments that we'd like to be lazy:
+in the arugments that we'd like to be lazy:
 -}
 betaL :: Tm -> Tm -> Tm
 betaL b ~a = shift 0 (-1) (substL b 0 (shift 0 1 a))
@@ -1374,7 +1374,7 @@ Now we have the needed infrastructure to implement our idea of improving NbE by
 creating a thunk of a normal form for a function argument `a` in the case of
 weakly normalising `App f a`. This thunk will be used like a _cache_: later if
 the function argument `a` is duplicated in different places in the function
-body, full normalisation of `a` will use the same thunk of `a`.
+body, full normalisation of `a` will use the same thunk fo `a`.
 
 To do this, we change the type of `Val6` to have an additional constructor
 `Cached7 t v`, where `t` is (a thunk of) the normal form of the value `v`.
@@ -1396,7 +1396,7 @@ term):
 -}
 
 -- Terms with lazy tagging for `shift0 i`
-data TmS = AbsS Int TmS | AppS Int TmS TmS | VarS Int deriving Show
+data TmS = AbsS Int TmS | AppS Int TmS TmS | VarS Int
 
 {-
 Shifting is again `O(1)` because we just need to accumulate it in the lazy tags:
@@ -1478,97 +1478,110 @@ forceShiftsSpec (AbsS i b) =
 forceShiftsSpec (AppS i f a) =
   shift 0 i (App (forceShiftsSpec f) (forceShiftsSpec a))
 
-
 {-
-The difficulty here is that we can't reduce the composition of two shifting
-operations into a single one. We do have `shift 0 i . shift 0 j = shift 0 (i + j)`,
-but unfortunately for the case of `AbsS i b` above, we have a lambda
-abstraction, and `shift 0 i (Abs b)` becomes `Abs (shift 1 i b)`. In general,
-the composition of two shifts isn't equal to a single shift:
-```
-shift x i . shift y j  =/=  shift _ _
-```
-
-At the moment, I do have an idea of implementing `forceShifts` with linear complexity,
-but it needs some very fancy data structure. I don't think this idea is the right
-way to do it, but for now it is what I have so let me explain it still.
-
-The idea is that we can represent any function `S : Int -> Int` transforming de
-Brujn indices as a sequence:
-```
-ss = [s0, s1, ..., sN]
-```
-which says that the variable of de Bruijn index `0` should be transformed to
-`s0`, the the variable of de Bruijn index `1` should be transformed to `s1`,
-etc. Therefore the function `S` is just `S v  = ss ! v`. Then the crucial
-observation is that the composition `S . shift 0 i` is
-```
-(S . shift 0 i) v = S (v + i) = ss ! (v + i) = (drop i ss) ! v
-```
-That is to say, the composite function `S . shift 0 i` can be represented by
-the sequence `drop i ss`.
-Similarly, when we descend from the context of `Abs b` to the context of `b`, the
-sequence that represents the function `S` changes from `ss` to `0 : map (1+) ss`.
-
-Therefore to maintain a compact representation of composites of shifting functions,
-we need a _persistent_ data structure that maintains a sequence of integers with
-the following operations:
-
-  1. pushing a `0` to the head of the sequence,
-  2. adding 1 to all the integers in sequence,
-  3. dropping the first `i` elements of the sequence for any given integer `i`.
-
-We may call this interface 'persistent stack with _bulk_ pop'.  Our lazy tagging
-list `SList Int` supports the first two operations in O(1) and the third
-operation in `O(i)`. The version of `forceShifts` with `SList Int` is then as
-follows.
+I struggled for a quite while to come up with the right way to do this _forceShifts_,
+and in the [initial version](https://yangzhixuan.github.io/NbEv1.html) of this article
+I fact did it in a not very good way, which is linear in the size of of the
+input only when we use a very fancy data structure. However, after posting the
+initial version I came up with the following a lot simpler idea.
 -}
 
-instance Shift0 Int where
-  shift0 i j = i + j
+{-
+The key idea is to shift our understanding of `shift 0 i t` from _adding `i` to
+all the de Bruijn indices in `t`_ to _a de Bruijn variable in `t` should skip
+`i`-levels to find its corresponding binder_. Imagine we are a variable of de
+Bruijn index `v`; to find the corresponding binder, we need to count inside out
+to find the `v+1`-th lambda abstraction. When we see `shift 0 i`, it means that
+we should skip the next `i`-levels in our counting.
 
-forceShifts :: SList Int -> TmS -> Tm
-forceShifts ss (VarS v) = Var (lookupSL ss v)
-forceShifts ss (AbsS i b) =
-  let ss' = Cons 0 (shift0 1 (dropSL i ss))
-  in Abs (forceShifts ss' b)
-forceShifts ss (AppS i f a) =
-  let ss' = dropSL i ss
-  in App (forceShifts ss' f)
-         (forceShifts ss' a)
+Let me explain this more concretely with an example.  Consider the term `t ::
+TmS` with lazy shifts:
+```
+t = AbsS 0 (AbsS 0 (AbsS 0 (AppS 7 (AbsS 3 (Var 2)) ...)))
+```
+To forces the lazy shifts stored in `t :: TmS` to the variables in `t`, we will
+traverse `t` to find its variables, and along the way, we will keep track of the
+structure of shifts and abstractions from the root to the variable.
+In the path from the root of the term to the position of `Var 2`, we have
+the following sequence of lambda abstractions and level skips:
+```
+Abs, Abs, Abs, Skip 7, Skip 3, Abs
+```
+To find the corresponding binder of `Var 2`, we as usual need to count 3 lambda
+abstractions inside out staring from the variable.  We first count the innermost
+`Abs` (the one at the end of the sequence), and we have 2 more abstractions to
+count. Then we see `Skip 3`, which means we shall directly _skip_ 3 levels. Next,
+we see `Skip 7`, so skip 7 more levels (does anyone remember the feeling of
+hitting a jetpack in the video game [Doodle
+Jump](https://en.wikipedia.org/wiki/Doodle_Jump)?).  Finally we count 2 more
+abstractions in the sequence. In this process, we have skipped or counted `1 + 3
++ 7 + 2 = 13` lambda abstractions. Therefore the de Bruijn index `2` should be
+adjusted to `13 - 1 = 12` (`-1` because de Bruijn indices start from `0`).
+-}
 
 {-
-This gives us the new normaliser, normalisation by evaluation with shared normal forms:
+We will represent a sequence of skips and bindings using the following datatype:
+-}
+data BindSkip = Root | Skip Int BindSkip | Bind Int BindSkip
+{-
+for which we will ensure that `Skip _ (Skip _ _)` and `Bind _ (Bind _ _)` never happen,
+and the integers stored in the sequence must be positive, except that `Bind 0 Root` is
+allowed.
+-}
+
+{-
+The following two functions push `i` skips or bindings to the sequence. Both of them
+are evidently `O(1)`.
+-}
+skip :: Int -> BindSkip -> BindSkip
+skip 0 bs = bs
+skip i (Skip j bs) = Skip (i + j) bs
+skip i bs = Skip i bs
+
+bind :: Int -> BindSkip -> BindSkip
+bind 0 bs = bs
+bind i (Bind j bs) = Bind (i + j) bs
+bind i bs = Bind i bs
+
+{-
+The `forceShifts` function that we wanted traverses a term, keep tracking the
+sequence of bindings and skips from the root to the current position in the
+process, and adjusts the variable using the binding/skipping sequence:
+-}
+forceShifts :: BindSkip -> TmS -> Tm
+forceShifts bs (AbsS i b) =
+  let bs' = bind 1 (skip i bs)
+  in Abs (forceShifts bs' b)
+forceShifts bs (AppS i f a) =
+  let bs' = skip i bs
+  in App (forceShifts bs' f) (forceShifts bs' a)
+forceShifts bs (VarS v) = Var (doodleJump v bs)
+{-
+where `doodleJump v bs` is the function doing the process of counting
+abstractions along a sequence `bs :: BindSkip` of abstractions/skips that I
+explained above:
+-}
+doodleJump :: Int -> BindSkip -> Int
+doodleJump i Root = error "variable out of bounds"
+doodleJump i (Skip j bs) = doodleJump i bs + j
+doodleJump i (Bind j bs)
+  | i < j = i
+  | otherwise = j + doodleJump (i - j) bs
+
+
+{-
+Finally, we have our new normaliser, normalisation by evaluation with shared normal forms:
 -}
 nf7 :: Tm -> Tm
 nf7 t = let n = fv t
-            ss = foldr (\v rs -> Cons v rs) Nil [0 .. n]
-        in forceShifts ss (reify7 (wnf7 t (reflect7 n)))
+            bs = bind (n+1) Root
+         in forceShifts bs (reify7 (wnf7 t (reflect7 n)))
 
 {-
 Indeed, `nf7` is much faster on the `nbeAdversarialExploit` program that `nf5` was slow:
 -}
 -- >>> fv (nf7 nbeAdversarialExploit)
 -- 0
-
-{-
-However, our `SList Int` is too slow for dropping the first `i` elements. A better
-implementation of stack with bulk pop would be using balanced trees that support
-`log`-time splitting, such as finger trees or red-black trees, which will give us
-an `O(log i)`-time implementation of dropping `i` elements. In our concrete application,
-`i` is bound by the _depth_ of lambda abstractions, so `i` will not be too big in
-practice.
-
-However, if we want to have a version of `nf7` that has better or equal
-asymptotic complexity as NbE on all families of input programs, we need a linear
-implementation of `forceShifts`, which needs all three operations (push, bulk
-pop, add) to be `O(1)` if we implement `forceShifts` like the one above.
-I do know the existence of such a data structure in the literature, namely the one
-in the paper [Improved Algorithms for Finding Level Ancestors in
-Dynamic Trees](https://link.springer.com/chapter/10.1007/3-540-45022-X_8) by
-Alstrup and Holm. However, this data structure is rather fancy so we won't implement it
-here.
--}
 
 {-
 After the initial version of this article was put online, [András
@@ -1579,25 +1592,18 @@ paper](https://arxiv.org/abs/2603.21949) by Biernacka et al, where 'strong'
 refers to normalising under binders. Also, Biernacka et. al. implement such a
 normaliser using _(freshly) named variables_ in values rather than de Bruijn
 indices, because shifting names is no-op (and normal forms with named
-variables can always be converted back de Bruijn indices easily).  Arguably this is a
-nicer way to do `nf7` than what we did here.
-However, I think the our `nf7` is cute so I decided to keep it in this article
--- it shows how far we can go with only the trick of lazy tagging and some
-elementary analysis of the bottlenecks in normalisation.
+variables can always be convereted back de Bruijn indices easily).  Arguably this is a
+simpler way to do `nf7` than what we did here (time-complexity-wise they are the
+same).  However, I think the our `nf7` is cute so I decided to keep it in
+this article -- it shows how far we can go with only the trick of lazy tagging
+and some elementary analysis of the bottlenecks in normalisation.
 -}
 
 
 {-
 **Editing History**
 
-* v3 (24 Apr, 2026): this is the version you are viewing now; [source code](https://yangzhixuan.github.io/NbE.hs).
-
-  I am an idiot -- the version of `nf7` in v2 is totally incorrect. I have reverted
-  `nf7` back to the version in v1.
-
-
-* v2 (23 Apr, 2026): [rendered HTML](https://yangzhixuan.github.io/NbEv2.html) and
-  [source code](https://yangzhixuan.github.io/NbEv2.hs).
+* v2 (23 Apr, 2026): this is the version you are viewing now; [source code](https://yangzhixuan.github.io/NbE.hs).
 
   1. Fix a bug in v1: although the argument `a` is marked with `~` to be lazy,
   it is passed to a _strict_ function `beta`. Now a lazy version of `betaL` is

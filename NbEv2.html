@@ -259,7 +259,7 @@
 <h1 class="title">An Algorithmic Reconstruction of Normalisation by
 Evaluation</h1>
 <p class="author">Zhixuan Yang, the University of Exeter</p>
-<p class="date">Apr 24, 2026</p>
+<p class="date">Apr 23, 2026</p>
 </header>
 <p>In the past a few years, I spent quite a lot of time on learning the
 categorical glueing technique for proving properties of programming
@@ -332,7 +332,7 @@ and <a href="https://plfa.github.io/Lambda/">this if you prefer code
 over maths</a>. Otherwise you can skim over the definitions and go to <a
 href="#naive-normaliser">the next section</a>; nothing unusual here.</p>
 <div class="sourceCode" id="cb3"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tm</span> <span class="ot">=</span> <span class="dt">Var</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">App</span> <span class="dt">Tm</span> <span class="dt">Tm</span> <span class="op">|</span> <span class="dt">Abs</span> <span class="dt">Tm</span> <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Eq</span>)</span>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tm</span> <span class="ot">=</span> <span class="dt">Var</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">App</span> <span class="dt">Tm</span> <span class="dt">Tm</span> <span class="op">|</span> <span class="dt">Abs</span> <span class="dt">Tm</span> <span class="kw">deriving</span> <span class="dt">Eq</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">infixl</span> <span class="ot">`App`</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -379,8 +379,8 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a 
 <span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>      s2&#39; <span class="ot">=</span> <span class="kw">if</span> p2 <span class="op">&gt;</span> <span class="dv">50</span>  <span class="kw">then</span> s2 <span class="kw">else</span> <span class="st">&quot;(&quot;</span> <span class="op">++</span> s2 <span class="op">++</span> <span class="st">&quot;)&quot;</span></span>
 <span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> (s1&#39; <span class="op">++</span> <span class="st">&quot; &quot;</span> <span class="op">++</span> s2&#39;, <span class="dv">50</span>)</span>
 <span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co">-- instance Show Tm where</span></span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="co">--   show t = let n = fv t in fst (showTm (n+1) t)</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">Tm</span> <span class="kw">where</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show</span> t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t <span class="kw">in</span> <span class="fu">fst</span> (showTm (n<span class="op">+</span><span class="dv">1</span>) t)</span>
 <span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; Abs (Var 0 `App` Var 0)</span></span>
 <span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. x0 x0</span></span>
@@ -1554,7 +1554,7 @@ additional integer lazy tag (an integer <code>i</code> means that
 <code>shift0 i</code> has been logically applied to this term):</p>
 <div class="sourceCode" id="cb86"><pre
 class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Terms with lazy tagging for `shift0 i`</span></span>
-<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">TmS</span> <span class="ot">=</span> <span class="dt">AbsS</span> <span class="dt">Int</span> <span class="dt">TmS</span> <span class="op">|</span> <span class="dt">AppS</span> <span class="dt">Int</span> <span class="dt">TmS</span> <span class="dt">TmS</span> <span class="op">|</span> <span class="dt">VarS</span> <span class="dt">Int</span> <span class="kw">deriving</span> <span class="dt">Show</span></span></code></pre></div>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">TmS</span> <span class="ot">=</span> <span class="dt">AbsS</span> <span class="dt">Int</span> <span class="dt">TmS</span> <span class="op">|</span> <span class="dt">AppS</span> <span class="dt">Int</span> <span class="dt">TmS</span> <span class="dt">TmS</span> <span class="op">|</span> <span class="dt">VarS</span> <span class="dt">Int</span></span></code></pre></div>
 <p>Shifting is again <code>O(1)</code> because we just need to
 accumulate it in the lazy tags:</p>
 <div class="sourceCode" id="cb87"><pre
@@ -1624,93 +1624,101 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb93-1"><a
 <span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>  shift <span class="dv">0</span> i (<span class="dt">Abs</span> (forceShiftsSpec b))</span>
 <span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a>forceShiftsSpec (<span class="dt">AppS</span> i f a) <span class="ot">=</span></span>
 <span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a>  shift <span class="dv">0</span> i (<span class="dt">App</span> (forceShiftsSpec f) (forceShiftsSpec a))</span></code></pre></div>
-<p>The difficulty here is that we can’t reduce the composition of two
-shifting operations into a single one. We do have
-<code>shift 0 i . shift 0 j = shift 0 (i + j)</code>, but unfortunately
-for the case of <code>AbsS i b</code> above, we have a lambda
-abstraction, and <code>shift 0 i (Abs b)</code> becomes
-<code>Abs (shift 1 i b)</code>. In general, the composition of two
-shifts isn’t equal to a single shift:</p>
-<pre><code>shift x i . shift y j  =/=  shift _ _</code></pre>
-<p>At the moment, I do have an idea of implementing
-<code>forceShifts</code> with linear complexity, but it needs some very
-fancy data structure. I don’t think this idea is the right way to do it,
-but for now it is what I have so let me explain it still.</p>
-<p>The idea is that we can represent any function
-<code>S : Int -&gt; Int</code> transforming de Brujn indices as a
-sequence:</p>
-<pre><code>ss = [s0, s1, ..., sN]</code></pre>
-<p>which says that the variable of de Bruijn index <code>0</code> should
-be transformed to <code>s0</code>, the the variable of de Bruijn index
-<code>1</code> should be transformed to <code>s1</code>, etc. Therefore
-the function <code>S</code> is just <code>S v  = ss ! v</code>. Then the
-crucial observation is that the composition <code>S . shift 0 i</code>
-is</p>
-<pre><code>(S . shift 0 i) v = S (v + i) = ss ! (v + i) = (drop i ss) ! v</code></pre>
-<p>That is to say, the composite function <code>S . shift 0 i</code> can
-be represented by the sequence <code>drop i ss</code>. Similarly, when
-we descend from the context of <code>Abs b</code> to the context of
-<code>b</code>, the sequence that represents the function <code>S</code>
-changes from <code>ss</code> to <code>0 : map (1+) ss</code>.</p>
-<p>Therefore to maintain a compact representation of composites of
-shifting functions, we need a <em>persistent</em> data structure that
-maintains a sequence of integers with the following operations:</p>
-<ol type="1">
-<li>pushing a <code>0</code> to the head of the sequence,</li>
-<li>adding 1 to all the integers in sequence,</li>
-<li>dropping the first <code>i</code> elements of the sequence for any
-given integer <code>i</code>.</li>
-</ol>
-<p>We may call this interface ‘persistent stack with <em>bulk</em> pop’.
-Our lazy tagging list <code>SList Int</code> supports the first two
-operations in O(1) and the third operation in <code>O(i)</code>. The
-version of <code>forceShifts</code> with <code>SList Int</code> is then
-as follows.</p>
+<p>I struggled for a quite while to come up with the right way to do
+this <em>forceShifts</em>, and in the <a
+href="https://yangzhixuan.github.io/NbEv1.html">initial version</a> of
+this article I fact did it in a not very good way, which is linear in
+the size of of the input only when we use a very fancy data structure.
+However, after posting the initial version I came up with the following
+a lot simpler idea.</p>
+<p>The key idea is to shift our understanding of
+<code>shift 0 i t</code> from <em>adding <code>i</code> to all the de
+Bruijn indices in <code>t</code></em> to <em>a de Bruijn variable in
+<code>t</code> should skip <code>i</code>-levels to find its
+corresponding binder</em>. Imagine we are a variable of de Bruijn index
+<code>v</code>; to find the corresponding binder, we need to count
+inside out to find the <code>v+1</code>-th lambda abstraction. When we
+see <code>shift 0 i</code>, it means that we should skip the next
+<code>i</code>-levels in our counting.</p>
+<p>Let me explain this more concretely with an example. Consider the
+term <code>t :: TmS</code> with lazy shifts:</p>
+<pre><code>t = AbsS 0 (AbsS 0 (AbsS 0 (AppS 7 (AbsS 3 (Var 2)) ...)))</code></pre>
+<p>To forces the lazy shifts stored in <code>t :: TmS</code> to the
+variables in <code>t</code>, we will traverse <code>t</code> to find its
+variables, and along the way, we will keep track of the structure of
+shifts and abstractions from the root to the variable. In the path from
+the root of the term to the position of <code>Var 2</code>, we have the
+following sequence of lambda abstractions and level skips:</p>
+<pre><code>Abs, Abs, Abs, Skip 7, Skip 3, Abs</code></pre>
+<p>To find the corresponding binder of <code>Var 2</code>, we as usual
+need to count 3 lambda abstractions inside out staring from the
+variable. We first count the innermost <code>Abs</code> (the one at the
+end of the sequence), and we have 2 more abstractions to count. Then we
+see <code>Skip 3</code>, which means we shall directly <em>skip</em> 3
+levels. Next, we see <code>Skip 7</code>, so skip 7 more levels (does
+anyone remember the feeling of hitting a jetpack in the video game <a
+href="https://en.wikipedia.org/wiki/Doodle_Jump">Doodle Jump</a>?).
+Finally we count 2 more abstractions in the sequence. In this process,
+we have skipped or counted <code>1 + 3 + 7 + 2 = 13</code> lambda
+abstractions. Therefore the de Bruijn index <code>2</code> should be
+adjusted to <code>13 - 1 = 12</code> (<code>-1</code> because de Bruijn
+indices start from <code>0</code>).</p>
+<p>We will represent a sequence of skips and bindings using the
+following datatype:</p>
+<div class="sourceCode" id="cb96"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">BindSkip</span> <span class="ot">=</span> <span class="dt">Root</span> <span class="op">|</span> <span class="dt">Skip</span> <span class="dt">Int</span> <span class="dt">BindSkip</span> <span class="op">|</span> <span class="dt">Bind</span> <span class="dt">Int</span> <span class="dt">BindSkip</span></span></code></pre></div>
+<p>for which we will ensure that <code>Skip _ (Skip _ _)</code> and
+<code>Bind _ (Bind _ _)</code> never happen, and the integers stored in
+the sequence must be positive, except that <code>Bind 0 Root</code> is
+allowed.</p>
+<p>The following two functions push <code>i</code> skips or bindings to
+the sequence. Both of them are evidently <code>O(1)</code>.</p>
 <div class="sourceCode" id="cb97"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Shift0</span> <span class="dt">Int</span> <span class="kw">where</span></span>
-<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>  shift0 i j <span class="ot">=</span> i <span class="op">+</span> j</span>
-<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb97-4"><a href="#cb97-4" aria-hidden="true" tabindex="-1"></a><span class="ot">forceShifts ::</span> <span class="dt">SList</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">TmS</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb97-5"><a href="#cb97-5" aria-hidden="true" tabindex="-1"></a>forceShifts ss (<span class="dt">VarS</span> v) <span class="ot">=</span> <span class="dt">Var</span> (lookupSL ss v)</span>
-<span id="cb97-6"><a href="#cb97-6" aria-hidden="true" tabindex="-1"></a>forceShifts ss (<span class="dt">AbsS</span> i b) <span class="ot">=</span></span>
-<span id="cb97-7"><a href="#cb97-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> ss&#39; <span class="ot">=</span> <span class="dt">Cons</span> <span class="dv">0</span> (shift0 <span class="dv">1</span> (dropSL i ss))</span>
-<span id="cb97-8"><a href="#cb97-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="dt">Abs</span> (forceShifts ss&#39; b)</span>
-<span id="cb97-9"><a href="#cb97-9" aria-hidden="true" tabindex="-1"></a>forceShifts ss (<span class="dt">AppS</span> i f a) <span class="ot">=</span></span>
-<span id="cb97-10"><a href="#cb97-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> ss&#39; <span class="ot">=</span> dropSL i ss</span>
-<span id="cb97-11"><a href="#cb97-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="dt">App</span> (forceShifts ss&#39; f)</span>
-<span id="cb97-12"><a href="#cb97-12" aria-hidden="true" tabindex="-1"></a>         (forceShifts ss&#39; a)</span></code></pre></div>
-<p>This gives us the new normaliser, normalisation by evaluation with
-shared normal forms:</p>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="ot">skip ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span></span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>skip <span class="dv">0</span> bs <span class="ot">=</span> bs</span>
+<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>skip i (<span class="dt">Skip</span> j bs) <span class="ot">=</span> <span class="dt">Skip</span> (i <span class="op">+</span> j) bs</span>
+<span id="cb97-4"><a href="#cb97-4" aria-hidden="true" tabindex="-1"></a>skip i bs <span class="ot">=</span> <span class="dt">Skip</span> i bs</span>
+<span id="cb97-5"><a href="#cb97-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb97-6"><a href="#cb97-6" aria-hidden="true" tabindex="-1"></a><span class="ot">bind ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span></span>
+<span id="cb97-7"><a href="#cb97-7" aria-hidden="true" tabindex="-1"></a>bind <span class="dv">0</span> bs <span class="ot">=</span> bs</span>
+<span id="cb97-8"><a href="#cb97-8" aria-hidden="true" tabindex="-1"></a>bind i (<span class="dt">Bind</span> j bs) <span class="ot">=</span> <span class="dt">Bind</span> (i <span class="op">+</span> j) bs</span>
+<span id="cb97-9"><a href="#cb97-9" aria-hidden="true" tabindex="-1"></a>bind i bs <span class="ot">=</span> <span class="dt">Bind</span> i bs</span></code></pre></div>
+<p>The <code>forceShifts</code> function that we wanted traverses a
+term, keep tracking the sequence of bindings and skips from the root to
+the current position in the process, and adjusts the variable using the
+binding/skipping sequence:</p>
 <div class="sourceCode" id="cb98"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf7 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>nf7 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
-<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>            ss <span class="ot">=</span> <span class="fu">foldr</span> (\v rs <span class="ot">-&gt;</span> <span class="dt">Cons</span> v rs) <span class="dt">Nil</span> [<span class="dv">0</span> <span class="op">..</span> n]</span>
-<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> forceShifts ss (reify7 (wnf7 t (reflect7 n)))</span></code></pre></div>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="ot">forceShifts ::</span> <span class="dt">BindSkip</span> <span class="ot">-&gt;</span> <span class="dt">TmS</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>forceShifts bs (<span class="dt">AbsS</span> i b) <span class="ot">=</span></span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> bs&#39; <span class="ot">=</span> bind <span class="dv">1</span> (skip i bs)</span>
+<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="dt">Abs</span> (forceShifts bs&#39; b)</span>
+<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a>forceShifts bs (<span class="dt">AppS</span> i f a) <span class="ot">=</span></span>
+<span id="cb98-6"><a href="#cb98-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> bs&#39; <span class="ot">=</span> skip i bs</span>
+<span id="cb98-7"><a href="#cb98-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="dt">App</span> (forceShifts bs&#39; f) (forceShifts bs&#39; a)</span>
+<span id="cb98-8"><a href="#cb98-8" aria-hidden="true" tabindex="-1"></a>forceShifts bs (<span class="dt">VarS</span> v) <span class="ot">=</span> <span class="dt">Var</span> (doodleJump v bs)</span></code></pre></div>
+<p>where <code>doodleJump v bs</code> is the function doing the process
+of counting abstractions along a sequence <code>bs :: BindSkip</code> of
+abstractions/skips that I explained above:</p>
+<div class="sourceCode" id="cb99"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="ot">doodleJump ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">BindSkip</span> <span class="ot">-&gt;</span> <span class="dt">Int</span></span>
+<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>doodleJump i <span class="dt">Root</span> <span class="ot">=</span> <span class="fu">error</span> <span class="st">&quot;variable out of bounds&quot;</span></span>
+<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>doodleJump i (<span class="dt">Skip</span> j bs) <span class="ot">=</span> doodleJump i bs <span class="op">+</span> j</span>
+<span id="cb99-4"><a href="#cb99-4" aria-hidden="true" tabindex="-1"></a>doodleJump i (<span class="dt">Bind</span> j bs)</span>
+<span id="cb99-5"><a href="#cb99-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> i <span class="op">&lt;</span> j <span class="ot">=</span> i</span>
+<span id="cb99-6"><a href="#cb99-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">=</span> j <span class="op">+</span> doodleJump (i <span class="op">-</span> j) bs</span></code></pre></div>
+<p>Finally, we have our new normaliser, normalisation by evaluation with
+shared normal forms:</p>
+<div class="sourceCode" id="cb100"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf7 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>nf7 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
+<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>            bs <span class="ot">=</span> bind (n<span class="op">+</span><span class="dv">1</span>) <span class="dt">Root</span></span>
+<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>         <span class="kw">in</span> forceShifts bs (reify7 (wnf7 t (reflect7 n)))</span></code></pre></div>
 <p>Indeed, <code>nf7</code> is much faster on the
 <code>nbeAdversarialExploit</code> program that <code>nf5</code> was
 slow:</p>
-<div class="sourceCode" id="cb99"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf7 nbeAdversarialExploit)</span></span>
-<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span></code></pre></div>
-<p>However, our <code>SList Int</code> is too slow for dropping the
-first <code>i</code> elements. A better implementation of stack with
-bulk pop would be using balanced trees that support
-<code>log</code>-time splitting, such as finger trees or red-black
-trees, which will give us an <code>O(log i)</code>-time implementation
-of dropping <code>i</code> elements. In our concrete application,
-<code>i</code> is bound by the <em>depth</em> of lambda abstractions, so
-<code>i</code> will not be too big in practice.</p>
-<p>However, if we want to have a version of <code>nf7</code> that has
-better or equal asymptotic complexity as NbE on all families of input
-programs, we need a linear implementation of <code>forceShifts</code>,
-which needs all three operations (push, bulk pop, add) to be
-<code>O(1)</code> if we implement <code>forceShifts</code> like the one
-above. I do know the existence of such a data structure in the
-literature, namely the one in the paper <a
-href="https://link.springer.com/chapter/10.1007/3-540-45022-X_8">Improved
-Algorithms for Finding Level Ancestors in Dynamic Trees</a> by Alstrup
-and Holm. However, this data structure is rather fancy so we won’t
-implement it here.</p>
+<div class="sourceCode" id="cb101"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf7 nbeAdversarialExploit)</span></span>
+<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span></code></pre></div>
 <p>After the initial version of this article was put online, <a
 href="https://andraskovacs.github.io">András Kovács</a> pointed out to
 me that the normaliser <code>nf7</code> (what I called NbE with shared
@@ -1720,22 +1728,16 @@ paper</a> by Biernacka et al, where ‘strong’ refers to normalising under
 binders. Also, Biernacka et. al. implement such a normaliser using
 <em>(freshly) named variables</em> in values rather than de Bruijn
 indices, because shifting names is no-op (and normal forms with named
-variables can always be converted back de Bruijn indices easily).
-Arguably this is a nicer way to do <code>nf7</code> than what we did
-here. However, I think the our <code>nf7</code> is cute so I decided to
-keep it in this article – it shows how far we can go with only the trick
-of lazy tagging and some elementary analysis of the bottlenecks in
-normalisation.</p>
+variables can always be convereted back de Bruijn indices easily).
+Arguably this is a simpler way to do <code>nf7</code> than what we did
+here (time-complexity-wise they are the same). However, I think the our
+<code>nf7</code> is cute so I decided to keep it in this article – it
+shows how far we can go with only the trick of lazy tagging and some
+elementary analysis of the bottlenecks in normalisation.</p>
 <p><strong>Editing History</strong></p>
 <ul>
-<li><p>v3 (24 Apr, 2026): this is the version you are viewing now; <a
+<li><p>v2 (23 Apr, 2026): this is the version you are viewing now; <a
 href="https://yangzhixuan.github.io/NbE.hs">source code</a>.</p>
-<p>I am an idiot – the version of <code>nf7</code> in v2 is totally
-incorrect. I have reverted <code>nf7</code> back to the version in
-v1.</p></li>
-<li><p>v2 (23 Apr, 2026): <a
-href="https://yangzhixuan.github.io/NbEv2.html">rendered HTML</a> and <a
-href="https://yangzhixuan.github.io/NbEv2.hs">source code</a>.</p>
 <ol type="1">
 <li><p>Fix a bug in v1: although the argument <code>a</code> is marked
 with <code>~</code> to be lazy, it is passed to a <em>strict</em>
