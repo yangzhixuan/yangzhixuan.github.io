@@ -2,7 +2,7 @@
 
 % An Algorithmic Reconstruction of Normalisation by Evaluation
 % Zhixuan Yang, the University of Exeter
-% Apr 27, 2026
+% Apr 24, 2026
 
 
 In the past a few years, I spent quite a lot of time on learning the categorical glueing
@@ -48,16 +48,7 @@ easier, as there is no implicit laziness that our algorithms secretly rely on.
 -}
 
 {-# LANGUAGE Strict #-}
-
--- Some other quality-of-life GHC extensions
-{-# LANGUAGE InstanceSigs, PatternSynonyms, ViewPatterns, RecordWildCards #-}
-
 module NbE where
-
--- In the last section of this article we will need mutable arraries.
-import Data.Array.MArray
-import Data.Array.ST
-import GHC.ST
 
 {-
 Note however, `Strict` doesn't change the behaviour of existing definitions from
@@ -91,7 +82,7 @@ Otherwise you can skim over the definitions and go to [the next
 section](#naive-normaliser); nothing unusual here.
 -}
 
-data Tm = Var Int | App Tm Tm | Abs Tm deriving Eq
+data Tm = Var Int | App Tm Tm | Abs Tm deriving (Show, Eq)
 
 infixl `App`
 
@@ -138,8 +129,8 @@ showTm ns (App f a) =
       s2' = if p2 > 50  then s2 else "(" ++ s2 ++ ")"
   in (s1' ++ " " ++ s2', 50)
 
-instance Show Tm where
-  show t = let n = fv t in fst (showTm (n+1) t)
+-- instance Show Tm where
+--   show t = let n = fv t in fst (showTm (n+1) t)
 
 -- >>> Abs (Var 0 `App` Var 0)
 -- \x0. x0 x0
@@ -219,7 +210,7 @@ This article is written as a `.hs` file so that I can use
 haskell-language-server to run small tests on the fly.  Unfortunately you can't
 do this if you are reading the generated html file. If you want to play with the
 code more interactively, you can download the source code
-[here](https://yangzhixuan.github.io/NbEv4.hs) and load it into your editor.
+[here](https://yangzhixuan.github.io/NbE.hs) and load it into your editor.
 -}
 
 -- Church numeral increment
@@ -1498,8 +1489,12 @@ the composition of two shifts isn't equal to a single shift:
 shift x i . shift y j  =/=  shift _ _
 ```
 
-To understand shifting functions better, we represent any function
-`S : Int -> Int` transforming de Brujn indices as a sequence:
+At the moment, I do have an idea of implementing `forceShifts` with linear complexity,
+but it needs some very fancy data structure. I don't think this idea is the right
+way to do it, but for now it is what I have so let me explain it still.
+
+The idea is that we can represent any function `S : Int -> Int` transforming de
+Brujn indices as a sequence:
 ```
 ss = [s0, s1, ..., sN]
 ```
@@ -1516,21 +1511,16 @@ Similarly, when we descend from the context of `Abs b` to the context of `b`, th
 sequence that represents the function `S` changes from `ss` to `0 : map (1+) ss`.
 
 Therefore to maintain a compact representation of composites of shifting functions,
-we need a functional data structure that maintains a sequence of integers with the
-following operations:
+we need a _persistent_ data structure that maintains a sequence of integers with
+the following operations:
 
   1. pushing a `0` to the head of the sequence,
   2. adding 1 to all the integers in sequence,
-  3. dropping the first `i` elements of the sequence for any given integer `i`,
-  4. accessing the `i`-th element for any given integer `i`.
+  3. dropping the first `i` elements of the sequence for any given integer `i`.
 
-We need the data structure to be functional because when for `App f a`
-the computation forks into two branches for `f` and `a` respectively, and modifying
-the sequence in one branch shall not affect the computation in other branches.
-
-We may call this interface 'stack with _bulk pop_'.  Our lazy tagging list
-`SList Int` supports the first two operations in `O(1)` and the other two
-operations in `O(i)`. The version of `forceShifts` with `SList Int` is then as
+We may call this interface 'persistent stack with _bulk_ pop'.  Our lazy tagging
+list `SList Int` supports the first two operations in O(1) and the third
+operation in `O(i)`. The version of `forceShifts` with `SList Int` is then as
 follows.
 -}
 
@@ -1562,183 +1552,25 @@ Indeed, `nf7` is much faster on the `nbeAdversarialExploit` program that `nf5` w
 -- 0
 
 {-
-Unfortunately, our `SList Int` is too slow for dropping the first `i` elements. A better
+However, our `SList Int` is too slow for dropping the first `i` elements. A better
 implementation of stack with bulk pop would be using balanced trees that support
 `log`-time splitting, such as finger trees or red-black trees, which will give us
 an `O(log i)`-time implementation of dropping `i` elements. In our concrete application,
 `i` is bound by the _depth_ of lambda abstractions, so `i` will not be too big in
 practice.
 
-However, if we want a version of `nf7` that has better or equal asymptotic complexity as
-NbE on all families of input programs, a logarithmic factor is not good enough either.
-We need pushing, bulk popping, and adding all to be `O(1)` (accessing in `O(i)`
-time is fine because for NbE we also did linear lookup for variables)
-I do know the existence of a fully persistent data structure in the literature
-that support all these operations in `O(1)`, namely the one in the paper
-[Improved Algorithms for Finding Level Ancestors in Dynamic
-Trees](https://link.springer.com/chapter/10.1007/3-540-45022-X_8) by Alstrup and
-Holm.  However, this is a rather complex data structure so we won't implement it
+However, if we want to have a version of `nf7` that has better or equal
+asymptotic complexity as NbE on all families of input programs, we need a linear
+implementation of `forceShifts`, which needs all three operations (push, bulk
+pop, add) to be `O(1)` if we implement `forceShifts` like the one above.
+I do know the existence of such a data structure in the literature, namely the one
+in the paper [Improved Algorithms for Finding Level Ancestors in
+Dynamic Trees](https://link.springer.com/chapter/10.1007/3-540-45022-X_8) by
+Alstrup and Holm. However, this data structure is rather fancy so we won't implement it
 here.
 -}
 
 {-
-Stateful Shifts Forcing
---------------------------------------------------------------------------------
-
-If we look at `forceShifts` again, we see that we use the sequence
-in a very predictable manner:
-```
-forceShifts ss (AppS i f a) =
-  let ss' = dropSL i ss
-  in App (forceShifts ss' f)
-         (forceShifts ss' a)
-```
-We first drop the first `i`-elements of the sequence `ss`, and then we do
-recursion for `f` and `a`. Both the computations `forceShifts ss' f` and
-`forceShifts ss' a` can subsequently modify the sequence, which is the reason
-why I said we need a persistent implementation of the sequence. However, we
-_can_ implement `forceShifts` with a mutable sequence, as long as we make
-the two recursion calls _sequential_ and ensure that `forceShifts` restores the
-sequence after it finishes its computation. Doing this will imply that we give
-up the possibility of parallelise `forceShifts`, but this is an acceptable cost.
-
-With mutation, stacks with bulk pops can be easily implemented as a mutable
-array, for which we remember an integer `delta` that is logically added to
-all integers stored in the array and an integer `end` that is logically the top
-of the stack:
--}
-
-data IndicesArr s = IndicesArr
-  { delta :: Int
-  , end :: Int
-  , arr :: STUArray s Int Int
-  }
-
-type M s a = IndicesArr s -> ST s a
-
-{-
-For mutable array we use Haskell's `STUArray`, whose operations are encapsulated
-in the `ST` monad for a pure interface. We define a type `M s a = IndicesArr s
--> ST s a` (a reader monad transformer applied to the `ST` monad); most
-subsequent functions will return this type.  (These are Haskell specific things.
-If we implement the algorithm in the a language where mutable state is supported
-as an ambient effect, there is no need to define this `M`).
--}
-
-
-{-
-To access the `v`-th element from the top of the stack, we just read the array
-(which is `O(1)`). We also need to remember to add `delta` to the result, since
-`delta` is logically added to all integers stored in the stack:
--}
-lookupIA :: Int -> M s Tm
-lookupIA v IndicesArr{..} =
-  do i <- readArray arr (end - v - 1)
-     return (Var (delta + i))
-
-{-
-Adding an integer to the stack just adds to the lazy `delta`:
--}
-addIA :: Int -> M s a -> M s a
-addIA i m ia@IndicesArr{..} = m ia{delta = delta + i}
-
-{-
-Similarly, dropping `i` elements just moves the end cursor:
--}
-dropIA :: Int -> M s a -> M s a
-dropIA i m ia@IndicesArr{..} = m ia{end = end - i}
-
-{-
-The only non-trivial operation is pushing an integer to the top of the stack.
-There are two things that we need to be careful: 1. if we want to push `i`,
-we actually need to write `i - delta` to the array, since `delta` is logically
-added to all the integers in the stack; 2. we need to restore the original
-content of the array after we finish our computation, where 'our computation' is
-passed in as an argument `m`.
--}
-pushIA :: Int -> M s a -> M s a
-pushIA i m ia@IndicesArr{..} = do
-  oldV <- readArray arr end
-  writeArray arr end (i - delta)
-  a <- m ia{end = end + 1}
-  writeArray arr end oldV
-  return a
-
-{-
-With these ingredients we can write our stateful implementation of `forceShifts`, which is
-essentially the same as `forceShifts` before except that the data structure is changed:
--}
-forceShiftsST :: TmS -> M s Tm
-forceShiftsST (VarS v) = lookupIA v
-forceShiftsST (AbsS i b) = dropIA i (addIA 1 (pushIA 0 (\ia -> Abs <$> forceShiftsST b ia)))
-forceShiftsST (AppS i f a) = dropIA i (\ia -> App <$> forceShiftsST f ia <*> forceShiftsST a ia)
-
-{-
-The function `forceShifts8` invokes `forceShiftsST` with a sufficiently large initial array (we
-could also use the classic doubling vector trick if we don't want to pre-determine the array size).
--}
-forceShifts8 :: Int -> TmS -> Tm
-forceShifts8 n t = runST $
-  do let m = 1 + n + depth t
-     indices <- newGenArray (0, m) (\i ->
-       if i <= n
-        then return (n - i)
-        else return (-1))
-     forceShiftsST t (IndicesArr 0 (n+1) indices) where
-
-  -- Maximum number of nested abstractions
-  depth :: TmS -> Int
-  depth (VarS v) = 0
-  depth (AbsS _ b) = 1 + depth b
-  depth (AppS _ f a) = max (depth f) (depth a)
-
-{-
-Our final normaliser is then
--}
-nf8 :: Tm -> Tm
-nf8 t = let n = fv t
-        in forceShifts8 n (reify7 (wnf7 t (reflect7 n)))
-
-{-
-Our normaliser is asymptotically better than or equal to the standard NbE
-normaliser `nf5` on all families of input programs. In particular, it is faster
-on the adversarial test that we saw earlier:
--}
--- >>> fv (nf8 nbeAdversarialExploit)
--- 0
-
-{-
-On this test `nf7` is slightly faster than our `nf8` because there is not much index
-shifting in this test, but we can construct the following example to differentiate
-`nf8` from `nf7`:
-```
-(\x0. \x1. \x2. ... \xN. (\y . c y y ... y) x0) (\z. c)
-```
-where `c` is a free variable. The normal form of `\z. c` is shared for all the `y`-s but
-this normal form is shifted by `N` when it comes to the context of `c y y ... y`.
--}
-
-manyShifts :: Int -> Tm
-manyShifts n = Abs (go n) `App` (Abs (Var 1)) where
-  go 0 = Abs (foldr (\_ r -> r `App` Var 0) (Var (n + 2)) [1 .. n]) `App` Var n
-  go i = Abs (go (i-1))
-
--- >>> manyShifts 3
--- (\x1. \x2. \x3. \x4. (\x5. x0 x5 x5 x5) x1) (\x1. x0)
-
--- This computes immediately on my machine:
--- >>> fv (nf8 (manyShifts 10000))
--- 0
-
--- and this is much slower:
--- >>> fv (nf7 (manyShifts 10000))
--- 0
-
-
-{-
-Final Remark
---------------------------------------------------------------------------------
-
 After the initial version of this article was put online, [András
 Kovács](https://andraskovacs.github.io) pointed out to me that the normaliser
 `nf7` (what I called NbE with shared normal forms) is known as _strong
@@ -1746,31 +1578,23 @@ call-by-need evaluation_ in the literature, such as in [this
 paper](https://arxiv.org/abs/2603.21949) by Biernacka et al, where 'strong'
 refers to normalising under binders. Also, Biernacka et. al. implement such a
 normaliser using _(freshly) named variables_ in values rather than de Bruijn
-indices, because shifting names is no-op, and normal forms with named
-variables can always be converted back de Bruijn indices easily. Arguably this
-is a nicer way to do NbE with shared normal forms than what we did (`nf7` and
-`nf8`) here, but I still like our solutions here, showing how far one can go
-with only the lazy tagging trick and some careful analysis of the performance
-bottleneck.
+indices, because shifting names is no-op (and normal forms with named
+variables can always be converted back de Bruijn indices easily).  Arguably this is a
+nicer way to do `nf7` than what we did here.
+However, I think the our `nf7` is cute so I decided to keep it in this article
+-- it shows how far we can go with only the trick of lazy tagging and some
+elementary analysis of the bottlenecks in normalisation.
 -}
 
 
 {-
 **Editing History**
 
-* v4 (27 Apr, 2026): this is the version you are viewing now; [source code](https://yangzhixuan.github.io/NbEv4.hs).
-
-  [Wenhao Tang](https://thwfhk.github.io) asked me why not use a mutable arrow
-  to implement stacks with bulk pop. I said it was because `forceShifts` needs
-  the data structure to be persistent. And then a few days later... I realised
-  `forceShifts` doesn't actually need it to be persistent, which leads us to
-  `nf8`.
-
-* v3 (24 Apr, 2026): [rendered HTML](https://yangzhixuan.github.io/NbEv3.html) and
-  [source code](https://yangzhixuan.github.io/NbEv3.hs).
+* v3 (24 Apr, 2026): this is the version you are viewing now; [source code](https://yangzhixuan.github.io/NbE.hs).
 
   I am an idiot -- the version of `nf7` in v2 is totally incorrect. I have reverted
   `nf7` back to the version in v1.
+
 
 * v2 (23 Apr, 2026): [rendered HTML](https://yangzhixuan.github.io/NbEv2.html) and
   [source code](https://yangzhixuan.github.io/NbEv2.hs).

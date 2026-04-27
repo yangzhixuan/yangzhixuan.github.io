@@ -259,7 +259,7 @@
 <h1 class="title">An Algorithmic Reconstruction of Normalisation by
 Evaluation</h1>
 <p class="author">Zhixuan Yang, the University of Exeter</p>
-<p class="date">Apr 27, 2026</p>
+<p class="date">Apr 24, 2026</p>
 </header>
 <p>In the past a few years, I spent quite a lot of time on learning the
 categorical glueing technique for proving properties of programming
@@ -304,16 +304,7 @@ porting the code in this article to other strict programming languages
 our algorithms secretly rely on.</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE Strict #-}</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">-- Some other quality-of-life GHC extensions</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE InstanceSigs, PatternSynonyms, ViewPatterns, RecordWildCards #-}</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">NbE</span> <span class="kw">where</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- In the last section of this article we will need mutable arraries.</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Array.MArray</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Array.ST</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">GHC.ST</span></span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">NbE</span> <span class="kw">where</span></span></code></pre></div>
 <p>Note however, <code>Strict</code> doesn’t change the behaviour of
 existing definitions from other modules, such as those from
 <code>Prelude</code>, so the built-in list type <code>[a]</code> remains
@@ -341,7 +332,7 @@ and <a href="https://plfa.github.io/Lambda/">this if you prefer code
 over maths</a>. Otherwise you can skim over the definitions and go to <a
 href="#naive-normaliser">the next section</a>; nothing unusual here.</p>
 <div class="sourceCode" id="cb3"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tm</span> <span class="ot">=</span> <span class="dt">Var</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">App</span> <span class="dt">Tm</span> <span class="dt">Tm</span> <span class="op">|</span> <span class="dt">Abs</span> <span class="dt">Tm</span> <span class="kw">deriving</span> <span class="dt">Eq</span></span>
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Tm</span> <span class="ot">=</span> <span class="dt">Var</span> <span class="dt">Int</span> <span class="op">|</span> <span class="dt">App</span> <span class="dt">Tm</span> <span class="dt">Tm</span> <span class="op">|</span> <span class="dt">Abs</span> <span class="dt">Tm</span> <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Eq</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">infixl</span> <span class="ot">`App`</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -388,8 +379,8 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a 
 <span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>      s2&#39; <span class="ot">=</span> <span class="kw">if</span> p2 <span class="op">&gt;</span> <span class="dv">50</span>  <span class="kw">then</span> s2 <span class="kw">else</span> <span class="st">&quot;(&quot;</span> <span class="op">++</span> s2 <span class="op">++</span> <span class="st">&quot;)&quot;</span></span>
 <span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> (s1&#39; <span class="op">++</span> <span class="st">&quot; &quot;</span> <span class="op">++</span> s2&#39;, <span class="dv">50</span>)</span>
 <span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">Tm</span> <span class="kw">where</span></span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show</span> t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t <span class="kw">in</span> <span class="fu">fst</span> (showTm (n<span class="op">+</span><span class="dv">1</span>) t)</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co">-- instance Show Tm where</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="co">--   show t = let n = fv t in fst (showTm (n+1) t)</span></span>
 <span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; Abs (Var 0 `App` Var 0)</span></span>
 <span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a><span class="co">-- \x0. x0 x0</span></span>
@@ -462,7 +453,7 @@ that I can use haskell-language-server to run small tests on the fly.
 Unfortunately you can’t do this if you are reading the generated html
 file. If you want to play with the code more interactively, you can
 download the source code <a
-href="https://yangzhixuan.github.io/NbEv4.hs">here</a> and load it into
+href="https://yangzhixuan.github.io/NbE.hs">here</a> and load it into
 your editor.</p>
 <div class="sourceCode" id="cb8"><pre
 class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Church numeral increment</span></span>
@@ -643,7 +634,7 @@ not be computed). We also need to use a version of <code>beta</code>
 that is lazy in its second argument. Until someone designs ‘strictness
 polymorphism’ and implements it in GHC, we have no choice but to
 duplicate our <code>beta</code> and <code>subst</code> functions with a
-<code>~</code> annotation in the arguments that we’d like to be
+<code>~</code> annotation in the arugments that we’d like to be
 lazy:</p>
 <div class="sourceCode" id="cb13"><pre
 class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ot">betaL ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
@@ -1544,7 +1535,7 @@ argument <code>a</code> in the case of weakly normalising
 <code>App f a</code>. This thunk will be used like a <em>cache</em>:
 later if the function argument <code>a</code> is duplicated in different
 places in the function body, full normalisation of <code>a</code> will
-use the same thunk of <code>a</code>.</p>
+use the same thunk fo <code>a</code>.</p>
 <p>To do this, we change the type of <code>Val6</code> to have an
 additional constructor <code>Cached7 t v</code>, where <code>t</code> is
 (a thunk of) the normal form of the value <code>v</code>. We shall have
@@ -1641,7 +1632,11 @@ abstraction, and <code>shift 0 i (Abs b)</code> becomes
 <code>Abs (shift 1 i b)</code>. In general, the composition of two
 shifts isn’t equal to a single shift:</p>
 <pre><code>shift x i . shift y j  =/=  shift _ _</code></pre>
-<p>To understand shifting functions better, we represent any function
+<p>At the moment, I do have an idea of implementing
+<code>forceShifts</code> with linear complexity, but it needs some very
+fancy data structure. I don’t think this idea is the right way to do it,
+but for now it is what I have so let me explain it still.</p>
+<p>The idea is that we can represent any function
 <code>S : Int -&gt; Int</code> transforming de Brujn indices as a
 sequence:</p>
 <pre><code>ss = [s0, s1, ..., sN]</code></pre>
@@ -1658,24 +1653,17 @@ we descend from the context of <code>Abs b</code> to the context of
 <code>b</code>, the sequence that represents the function <code>S</code>
 changes from <code>ss</code> to <code>0 : map (1+) ss</code>.</p>
 <p>Therefore to maintain a compact representation of composites of
-shifting functions, we need a functional data structure that maintains a
-sequence of integers with the following operations:</p>
+shifting functions, we need a <em>persistent</em> data structure that
+maintains a sequence of integers with the following operations:</p>
 <ol type="1">
 <li>pushing a <code>0</code> to the head of the sequence,</li>
 <li>adding 1 to all the integers in sequence,</li>
 <li>dropping the first <code>i</code> elements of the sequence for any
-given integer <code>i</code>,</li>
-<li>accessing the <code>i</code>-th element for any given integer
-<code>i</code>.</li>
+given integer <code>i</code>.</li>
 </ol>
-<p>We need the data structure to be functional because when for
-<code>App f a</code> the computation forks into two branches for
-<code>f</code> and <code>a</code> respectively, and modifying the
-sequence in one branch shall not affect the computation in other
-branches.</p>
-<p>We may call this interface ‘stack with <em>bulk pop</em>’. Our lazy
-tagging list <code>SList Int</code> supports the first two operations in
-<code>O(1)</code> and the other two operations in <code>O(i)</code>. The
+<p>We may call this interface ‘persistent stack with <em>bulk</em> pop’.
+Our lazy tagging list <code>SList Int</code> supports the first two
+operations in O(1) and the third operation in <code>O(i)</code>. The
 version of <code>forceShifts</code> with <code>SList Int</code> is then
 as follows.</p>
 <div class="sourceCode" id="cb97"><pre
@@ -1704,169 +1692,25 @@ slow:</p>
 <div class="sourceCode" id="cb99"><pre
 class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf7 nbeAdversarialExploit)</span></span>
 <span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span></code></pre></div>
-<p>Unfortunately, our <code>SList Int</code> is too slow for dropping
-the first <code>i</code> elements. A better implementation of stack with
+<p>However, our <code>SList Int</code> is too slow for dropping the
+first <code>i</code> elements. A better implementation of stack with
 bulk pop would be using balanced trees that support
 <code>log</code>-time splitting, such as finger trees or red-black
 trees, which will give us an <code>O(log i)</code>-time implementation
 of dropping <code>i</code> elements. In our concrete application,
 <code>i</code> is bound by the <em>depth</em> of lambda abstractions, so
 <code>i</code> will not be too big in practice.</p>
-<p>However, if we want a version of <code>nf7</code> that has better or
-equal asymptotic complexity as NbE on all families of input programs, a
-logarithmic factor is not good enough either. We need pushing, bulk
-popping, and adding all to be <code>O(1)</code> (accessing in
-<code>O(i)</code> time is fine because for NbE we also did linear lookup
-for variables) I do know the existence of a fully persistent data
-structure in the literature that support all these operations in
-<code>O(1)</code>, namely the one in the paper <a
+<p>However, if we want to have a version of <code>nf7</code> that has
+better or equal asymptotic complexity as NbE on all families of input
+programs, we need a linear implementation of <code>forceShifts</code>,
+which needs all three operations (push, bulk pop, add) to be
+<code>O(1)</code> if we implement <code>forceShifts</code> like the one
+above. I do know the existence of such a data structure in the
+literature, namely the one in the paper <a
 href="https://link.springer.com/chapter/10.1007/3-540-45022-X_8">Improved
 Algorithms for Finding Level Ancestors in Dynamic Trees</a> by Alstrup
-and Holm. However, this is a rather complex data structure so we won’t
+and Holm. However, this data structure is rather fancy so we won’t
 implement it here.</p>
-<h1 data-number="15" id="stateful-shifts-forcing"><span
-class="header-section-number">15</span> Stateful Shifts Forcing</h1>
-<p>If we look at <code>forceShifts</code> again, we see that we use the
-sequence in a very predictable manner:</p>
-<pre><code>forceShifts ss (AppS i f a) =
-  let ss&#39; = dropSL i ss
-  in App (forceShifts ss&#39; f)
-         (forceShifts ss&#39; a)</code></pre>
-<p>We first drop the first <code>i</code>-elements of the sequence
-<code>ss</code>, and then we do recursion for <code>f</code> and
-<code>a</code>. Both the comptuations <code>forceShifts ss' f</code> and
-<code>forceShifts ss' a</code> can subsequently modify the sequence,
-which is the reason why I said we need a persistent implementation of
-the sequence. However, we <em>can</em> implement
-<code>forceShifts</code> with a mutable sequence, as long as we make the
-two recursion calls <em>sequential</em> and ensure that
-<code>forceShifts</code> restores the sequence after it finishes its
-computation. Doing this will imply that we give up the possibility of
-parallelise <code>forceShifts</code>, but this is an acceptable
-cost.</p>
-<p>With mutation, stacks with bulk pops can be easily implemented as a
-mutable array, for which we remember an integer <code>delta</code> that
-is logically added to all integers stored in the array and an integer
-<code>end</code> that is logically the top of the stack:</p>
-<div class="sourceCode" id="cb101"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">IndicesArr</span> s <span class="ot">=</span> <span class="dt">IndicesArr</span></span>
-<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a>  {<span class="ot"> delta ::</span> <span class="dt">Int</span></span>
-<span id="cb101-3"><a href="#cb101-3" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> end ::</span> <span class="dt">Int</span></span>
-<span id="cb101-4"><a href="#cb101-4" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> arr ::</span> <span class="dt">STUArray</span> s <span class="dt">Int</span> <span class="dt">Int</span></span>
-<span id="cb101-5"><a href="#cb101-5" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb101-6"><a href="#cb101-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb101-7"><a href="#cb101-7" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">M</span> s a <span class="ot">=</span> <span class="dt">IndicesArr</span> s <span class="ot">-&gt;</span> <span class="dt">ST</span> s a</span></code></pre></div>
-<p>For mutable arraries we will use Haskell’s <code>STUArray</code>,
-whose operations are encapsulated in the <code>ST</code> monad for a
-pure interface. We define a type
-<code>M s a = IndicesArr s -&gt; ST s a</code> (a reader monad
-transformer applied to the <code>ST</code> monad); most subsequent
-functions will return this type. (These are Haskell specific things. If
-we implement the algorithm in the a language where mutable state is
-supported as an ambient effect, there is no need to define this
-<code>M</code>).</p>
-<p>To access the <code>v</code>-th element from the top of the stack, we
-just read the array (which is <code>O(1)</code>). We aldo need to
-remember to add <code>delta</code> to the result, since
-<code>delta</code> is logically added to all integers stored in the
-stack:</p>
-<div class="sourceCode" id="cb102"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="ot">lookupIA ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">M</span> s <span class="dt">Tm</span></span>
-<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a>lookupIA v <span class="dt">IndicesArr</span>{<span class="op">..</span>} <span class="ot">=</span></span>
-<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">do</span> i <span class="ot">&lt;-</span> readArray arr (end <span class="op">-</span> v <span class="op">-</span> <span class="dv">1</span>)</span>
-<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a>     <span class="fu">return</span> (<span class="dt">Var</span> (delta <span class="op">+</span> i))</span></code></pre></div>
-<p>Adding an integer to the stack just adds to the lazy
-<code>delta</code>:</p>
-<div class="sourceCode" id="cb103"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="ot">addIA ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">M</span> s a <span class="ot">-&gt;</span> <span class="dt">M</span> s a</span>
-<span id="cb103-2"><a href="#cb103-2" aria-hidden="true" tabindex="-1"></a>addIA i m ia<span class="op">@</span><span class="dt">IndicesArr</span>{<span class="op">..</span>} <span class="ot">=</span> m ia{delta <span class="ot">=</span> delta <span class="op">+</span> i}</span></code></pre></div>
-<p>Similarly, dropping <code>i</code> elements just moves the end
-cursor:</p>
-<div class="sourceCode" id="cb104"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="ot">dropIA ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">M</span> s a <span class="ot">-&gt;</span> <span class="dt">M</span> s a</span>
-<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a>dropIA i m ia<span class="op">@</span><span class="dt">IndicesArr</span>{<span class="op">..</span>} <span class="ot">=</span> m ia{end <span class="ot">=</span> end <span class="op">-</span> i}</span></code></pre></div>
-<p>The only non-trivial operation is pushing an integer to the top of
-the stack. There are two things that we need to be careful: 1. if we
-want to push <code>i</code>, we actually need to write
-<code>i - delta</code> to the array, since <code>delta</code> is
-logically added to all the integers in the stack; 2. we need to restore
-the original content of the array after we finish our computation, where
-‘our computation’ is passed in as an argument <code>m</code>.</p>
-<div class="sourceCode" id="cb105"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="ot">pushIA ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">M</span> s a <span class="ot">-&gt;</span> <span class="dt">M</span> s a</span>
-<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a>pushIA i m ia<span class="op">@</span><span class="dt">IndicesArr</span>{<span class="op">..</span>} <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a>  oldV <span class="ot">&lt;-</span> readArray arr end</span>
-<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a>  writeArray arr end (i <span class="op">-</span> delta)</span>
-<span id="cb105-5"><a href="#cb105-5" aria-hidden="true" tabindex="-1"></a>  a <span class="ot">&lt;-</span> m ia{end <span class="ot">=</span> end <span class="op">+</span> <span class="dv">1</span>}</span>
-<span id="cb105-6"><a href="#cb105-6" aria-hidden="true" tabindex="-1"></a>  writeArray arr end oldV</span>
-<span id="cb105-7"><a href="#cb105-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span> a</span></code></pre></div>
-<p>With these ingredients we can write our stateful implementation of
-<code>forceShifts</code>, which is essentially the same as
-<code>forceShifts</code> before except that the data structure is
-changed:</p>
-<div class="sourceCode" id="cb106"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="ot">forceShiftsST ::</span> <span class="dt">TmS</span> <span class="ot">-&gt;</span> <span class="dt">M</span> s <span class="dt">Tm</span></span>
-<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a>forceShiftsST (<span class="dt">VarS</span> v) <span class="ot">=</span> lookupIA v</span>
-<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a>forceShiftsST (<span class="dt">AbsS</span> i b) <span class="ot">=</span> dropIA i (addIA <span class="dv">1</span> (pushIA <span class="dv">0</span> (\ia <span class="ot">-&gt;</span> <span class="dt">Abs</span> <span class="op">&lt;$&gt;</span> forceShiftsST b ia)))</span>
-<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a>forceShiftsST (<span class="dt">AppS</span> i f a) <span class="ot">=</span> dropIA i (\ia <span class="ot">-&gt;</span> <span class="dt">App</span> <span class="op">&lt;$&gt;</span> forceShiftsST f ia <span class="op">&lt;*&gt;</span> forceShiftsST a ia)</span></code></pre></div>
-<p>The function <code>forceShifts8</code> invokes
-<code>forceShiftsST</code> with a sufficiently large initial array (we
-could also use the classic doubling vector trick if we don’t want to
-pre-determine the array size).</p>
-<div class="sourceCode" id="cb107"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="ot">forceShifts8 ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">TmS</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a>forceShifts8 n t <span class="ot">=</span> runST <span class="op">$</span></span>
-<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">do</span> <span class="kw">let</span> m <span class="ot">=</span> <span class="dv">1</span> <span class="op">+</span> n <span class="op">+</span> depth t</span>
-<span id="cb107-4"><a href="#cb107-4" aria-hidden="true" tabindex="-1"></a>     indices <span class="ot">&lt;-</span> newGenArray (<span class="dv">0</span>, m) (\i <span class="ot">-&gt;</span></span>
-<span id="cb107-5"><a href="#cb107-5" aria-hidden="true" tabindex="-1"></a>       <span class="kw">if</span> i <span class="op">&lt;=</span> n</span>
-<span id="cb107-6"><a href="#cb107-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">then</span> <span class="fu">return</span> (n <span class="op">-</span> i)</span>
-<span id="cb107-7"><a href="#cb107-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span> <span class="fu">return</span> (<span class="op">-</span><span class="dv">1</span>))</span>
-<span id="cb107-8"><a href="#cb107-8" aria-hidden="true" tabindex="-1"></a>     forceShiftsST t (<span class="dt">IndicesArr</span> <span class="dv">0</span> (n<span class="op">+</span><span class="dv">1</span>) indices) <span class="kw">where</span></span>
-<span id="cb107-9"><a href="#cb107-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb107-10"><a href="#cb107-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- Maximum number of nested abstractions</span></span>
-<span id="cb107-11"><a href="#cb107-11" aria-hidden="true" tabindex="-1"></a><span class="ot">  depth ::</span> <span class="dt">TmS</span> <span class="ot">-&gt;</span> <span class="dt">Int</span></span>
-<span id="cb107-12"><a href="#cb107-12" aria-hidden="true" tabindex="-1"></a>  depth (<span class="dt">VarS</span> v) <span class="ot">=</span> <span class="dv">0</span></span>
-<span id="cb107-13"><a href="#cb107-13" aria-hidden="true" tabindex="-1"></a>  depth (<span class="dt">AbsS</span> _ b) <span class="ot">=</span> <span class="dv">1</span> <span class="op">+</span> depth b</span>
-<span id="cb107-14"><a href="#cb107-14" aria-hidden="true" tabindex="-1"></a>  depth (<span class="dt">AppS</span> _ f a) <span class="ot">=</span> <span class="fu">max</span> (depth f) (depth a)</span></code></pre></div>
-<p>Our final normaliser is then</p>
-<div class="sourceCode" id="cb108"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="ot">nf8 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a>nf8 t <span class="ot">=</span> <span class="kw">let</span> n <span class="ot">=</span> fv t</span>
-<span id="cb108-3"><a href="#cb108-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span> forceShifts8 n (reify7 (wnf7 t (reflect7 n)))</span></code></pre></div>
-<p>Our normaliser is asymptotically better than or equal to the standard
-NbE normaliser <code>nf5</code> on all families of input programs. In
-particular, it is faster on the adversarial test that we saw
-earlier:</p>
-<div class="sourceCode" id="cb109"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf8 nbeAdversarialExploit)</span></span>
-<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span></code></pre></div>
-<p>On this test <code>nf7</code> is slightly faster than our
-<code>nf8</code> because there is not much index shifting in this test,
-but we can construct the following example to differentiate
-<code>nf8</code> from <code>nf7</code>:</p>
-<pre><code>(\x0. \x1. \x2. ... \xN. (\y . c y y ... y) x0) (\z. c)</code></pre>
-<p>where <code>c</code> is a free variable. The normal form of
-<code>\z. c</code> is shared for all the <code>y</code>-s but this
-normal form is shifted by <code>N</code> when it comes to the context of
-<code>c y y ... y</code>.</p>
-<div class="sourceCode" id="cb111"><pre
-class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="ot">manyShifts ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Tm</span></span>
-<span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a>manyShifts n <span class="ot">=</span> <span class="dt">Abs</span> (go n) <span class="ot">`App`</span> (<span class="dt">Abs</span> (<span class="dt">Var</span> <span class="dv">1</span>)) <span class="kw">where</span></span>
-<span id="cb111-3"><a href="#cb111-3" aria-hidden="true" tabindex="-1"></a>  go <span class="dv">0</span> <span class="ot">=</span> <span class="dt">Abs</span> (<span class="fu">foldr</span> (\_ r <span class="ot">-&gt;</span> r <span class="ot">`App`</span> <span class="dt">Var</span> <span class="dv">0</span>) (<span class="dt">Var</span> (n <span class="op">+</span> <span class="dv">2</span>)) [<span class="dv">1</span> <span class="op">..</span> n]) <span class="ot">`App`</span> <span class="dt">Var</span> n</span>
-<span id="cb111-4"><a href="#cb111-4" aria-hidden="true" tabindex="-1"></a>  go i <span class="ot">=</span> <span class="dt">Abs</span> (go (i<span class="op">-</span><span class="dv">1</span>))</span>
-<span id="cb111-5"><a href="#cb111-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb111-6"><a href="#cb111-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; manyShifts 3</span></span>
-<span id="cb111-7"><a href="#cb111-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- (\x1. \x2. \x3. \x4. (\x5. x0 x5 x5 x5) x1) (\x1. x0)</span></span>
-<span id="cb111-8"><a href="#cb111-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb111-9"><a href="#cb111-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- This computes immediately on my machine:</span></span>
-<span id="cb111-10"><a href="#cb111-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf8 (manyShifts 10000))</span></span>
-<span id="cb111-11"><a href="#cb111-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span>
-<span id="cb111-12"><a href="#cb111-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb111-13"><a href="#cb111-13" aria-hidden="true" tabindex="-1"></a><span class="co">-- and this is much slower:</span></span>
-<span id="cb111-14"><a href="#cb111-14" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; fv (nf7 (manyShifts 10000))</span></span>
-<span id="cb111-15"><a href="#cb111-15" aria-hidden="true" tabindex="-1"></a><span class="co">-- 0</span></span></code></pre></div>
-<h1 data-number="16" id="final-remark"><span
-class="header-section-number">16</span> Final Remark</h1>
 <p>After the initial version of this article was put online, <a
 href="https://andraskovacs.github.io">András Kovács</a> pointed out to
 me that the normaliser <code>nf7</code> (what I called NbE with shared
@@ -1877,24 +1721,15 @@ binders. Also, Biernacka et. al. implement such a normaliser using
 <em>(freshly) named variables</em> in values rather than de Bruijn
 indices, because shifting names is no-op (and normal forms with named
 variables can always be converted back de Bruijn indices easily).
-Arguably this is a nicer way to do NbE with shared normal forms than
-what we did (<code>nf7</code> and <code>nf8</code>) here, but I still
-like our solutions here, showing how far one can go with only the lazy
-tagging trick and some careful analysis of the performance
-bottleneck.</p>
+Arguably this is a nicer way to do <code>nf7</code> than what we did
+here. However, I think the our <code>nf7</code> is cute so I decided to
+keep it in this article – it shows how far we can go with only the trick
+of lazy tagging and some elementary analysis of the bottlenecks in
+normalisation.</p>
 <p><strong>Editing History</strong></p>
 <ul>
-<li><p>v4 (27 Apr, 2026): this is the version you are viewing now; <a
-href="https://yangzhixuan.github.io/NbEv4.hs">source code</a>.</p>
-<p><a href="https://thwfhk.github.io">Wenhao Tang</a> asked me why not
-use a mutable arrow to implement stacks with bulk pop. I said it was
-because <code>forceShifts</code> needs the data structure to be
-persistent. And then a few days later… I realised
-<code>forceShifts</code> doesn’t actually need it to be persistent,
-which leads us to <code>nf8</code>.</p></li>
-<li><p>v3 (24 Apr, 2026): <a
-href="https://yangzhixuan.github.io/NbEv3.html">rendered HTML</a> and <a
-href="https://yangzhixuan.github.io/NbEv3.hs">source code</a>.</p>
+<li><p>v3 (24 Apr, 2026): this is the version you are viewing now; <a
+href="https://yangzhixuan.github.io/NbE.hs">source code</a>.</p>
 <p>I am an idiot – the version of <code>nf7</code> in v2 is totally
 incorrect. I have reverted <code>nf7</code> back to the version in
 v1.</p></li>
