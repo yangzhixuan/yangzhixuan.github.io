@@ -293,7 +293,7 @@ normaliser on some input (and never worse on all input).</p>
 class="header-section-number">1</span> Preliminary setup</h1>
 <p>In this article, we will use Haskell as our meta-language. Haskell is
 a lazy language. Although laziness never harms the time complexity of
-programs (and can sometimes make asymptotic improvements!), thinking
+programs (and can sometimes make asymptotical improvement!), thinking
 about the running cost of lazy programs is a nightmare compared to
 strict programs. Therefore we will turn on the <code>Strict</code>
 extension of GHC, which makes laziness an <em>opt-in</em> feature (by
@@ -310,7 +310,7 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a 
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">NbE</span> <span class="kw">where</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- In the last section of this article we will need mutable arrays.</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- In the last section of this article we will need mutable arraries.</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Array.MArray</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Array.ST</span></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">GHC.ST</span></span></code></pre></div>
@@ -462,7 +462,7 @@ that I can use haskell-language-server to run small tests on the fly.
 Unfortunately you can’t do this if you are reading the generated html
 file. If you want to play with the code more interactively, you can
 download the source code <a
-href="https://yangzhixuan.github.io/NbEv5.hs">here</a> and load it into
+href="https://yangzhixuan.github.io/NbEv4.hs">here</a> and load it into
 your editor.</p>
 <div class="sourceCode" id="cb8"><pre
 class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Church numeral increment</span></span>
@@ -568,7 +568,7 @@ the minimum amount of normalisation work that we should do to
 lambda abstraction, because that’s what we need for doing a
 beta-reduction. We can normalise <code>f</code> more, but exposing its
 outermost layer is the minimum requirement. In jargon, we must at least
-normalise <code>f</code> to its <em>weak head normal form</em>
+normalise <code>f</code> to its the <em>weak head normal form</em>
 (WHNF).</p></li>
 <li><p>We have no constraints on how much normalisation that we do for
 <code>a</code>. We can leave it totally unnormalised when supplying it
@@ -831,14 +831,14 @@ its concrete value (<code>wnf1 N</code> for the term above). Therefore
 we can simply represent a lazy substitution applied to a term as a list
 of terms. More precisely, we will lazily store a substitution</p>
 <pre><code>((((t [a1/x1]) [a2/x2]) [a3/x3]) ... [aN/xN])</code></pre>
-<p>as a pair of the original term <code>t</code> and the list
+<p>as pair of the original term <code>t</code> and the list
 <code>[aN, ..., a3, a2, a1]</code>. Applying a new substitution (for the
 de Bruijn index 0) is just cons-ing a value to the head of the list.</p>
 <p>Notice the correctness of this representation hinges on the fact that
 we are doing <em>capture-avoiding substitution</em>. When we substitute
-a value <code>aN</code> for a bound variable <code>xN</code>, we can
+a value <code>aN</code> for a bound <em>variable <code>xN</code>, we can
 just cons <code>aN</code> to the list <code>[..., a3, a2, a1]</code> of
-existing substitutions for the <em>outer bound variables</em> because we
+existing substitutions for the </em>outer bound variables* because we
 know for sure that <code>xN</code> doesn’t occur in the arguments
 <code>[..., a3, a2, a1]</code> from outer layers. For example, consider
 the term</p>
@@ -855,7 +855,7 @@ been substituted by <code>wnf1 N</code>, the variable of de Bruijn index
 <a href="https://arxiv.org/abs/1601.01586"><em>delayed
 substitution</em></a> for dealing with type formers that do not commute
 with substitutions. There is similarity between delayed substitution and
-our idea here, but the motivation is completely different: there the
+our idea here, but the motivation is completely different: loc cit the
 problem is that some syntactic constructors don’t commute with
 substitution, whereas our syntactic constructors do commute with
 substitution and we delay substitution for efficiency
@@ -871,11 +871,11 @@ lazy substitutions’ is too verbose, so we will just call them
 <em>values</em>. A value is either</p>
 <ol type="1">
 <li><p>a lambda function, represented by <code>Closure2</code> below,
-which has two fields: the function body and the lazy substitution
-applied to this function (stored as a lazy list of values); or</p></li>
+which two fields: the function body and the lazy substitution applied to
+this function (stored as a lazy list of values); or</p></li>
 <li><p>a variable applied to a list of arguments, represented by
-<code>Spine2</code> above, which also has two fields: the de Bruijn
-index of the variable and the arguments (also stored as a lazy list of
+<code>Spine2</code> above, which also have two fields: the de Bruijn
+index of the variable and the arguments (stored also as a lazy list of
 values).</p></li>
 </ol>
 <div class="sourceCode" id="cb31"><pre
@@ -924,8 +924,8 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb37-1"><a
 <p>Substituting <code>a'</code> for the variable <code>0</code> in
 <code>b</code> should now be just <code>a' : sub'</code>. However, we
 now need to shift the de Bruijn indices of the whole substitution by 1
-rather than just <code>a</code>, because <code>sub'</code> is a lazy
-substitution applied to <code>Abs b</code> rather than <code>b</code>.
+rather than just <code>a</code>, because <code>sub'</code> is an lazy
+substitution applied <code>Abs b</code> rather than <code>b</code>.
 Therefore our new substitution for <code>b</code> should be
 <code>shift0List 1 (a' : sub')</code> where</p>
 <div class="sourceCode" id="cb38"><pre
@@ -1007,7 +1007,7 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb43-1"><a
 class="header-section-number">8</span> Defunctional normalisation by
 evaluation</h1>
 <p>Now let’s move on to optimise <code>wnf2</code> further. A notable
-source of inefficiency is the work that we need to do for shifting de
+source of inefficiency is the work that we needs to do for shifting de
 Bruijn indices. De Bruijn indices are only for representing variables in
 a scope-safe way. They shall not play any central role in normalisation.
 Therefore we’d like to optimise them out.</p>
@@ -1020,7 +1020,7 @@ namely the following line from our earlier <code>wnf1</code> (with
 <code>beta</code> inlined for easier comparison):</p>
 <div class="sourceCode" id="cb45"><pre
 class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>       <span class="dt">Abs</span> b <span class="ot">-&gt;</span> wnf1 (shift <span class="dv">0</span> (<span class="op">-</span><span class="dv">1</span>) (subst b <span class="dv">0</span> (shift <span class="dv">0</span> <span class="dv">1</span> a&#39;)))</span></code></pre></div>
-<p>An observation useful to us is that in the setting of
+<p>A observation useful to us is that in the setting of
 <code>wnf2</code> the lazy substitution <code>a' : sub'</code>
 substitutes <strong>all</strong> the free variables of <code>b</code>.
 Because weak normalisation on a term never introduces new free
@@ -1037,7 +1037,7 @@ out!</p>
 <pre><code>   wnf2 b (shift0List (-1) (shift0List 1 (a&#39; : sub&#39;)))
 =  wnf2 b (a&#39; : sub&#39;)</code></pre>
 <p>The observation allows us to optimise <code>wnf2</code> into the
-following <code>wnf3</code>, resulting in a new normaliser
+following <code>wnf3</code>, resulting a new normaliser
 <code>nf3</code>:</p>
 <div class="sourceCode" id="cb48"><pre
 class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="ot">wnf3 ::</span> <span class="dt">Tm</span> <span class="ot">-&gt;</span> <span class="dt">Subst2</span> <span class="ot">-&gt;</span> <span class="dt">Val2</span></span>
@@ -1237,7 +1237,7 @@ In this way, if <code>b</code> is a lambda abstraction,
 <code>b = \w. c</code>, in the context of <code>c</code>, the variables
 <code>x</code>, <code>y</code>, and <code>z</code> would still be
 <code>0</code>, <code>1</code>, and <code>2</code>. Shifting variables
-into the next level is <code>O(0)</code> (i.e. a no-op)! This kind of
+into the next level is <code>O(0)</code> (i.e. an no-op)! This kind of
 variable representation is sometimes called de Bruijn
 <em>levels</em>.</p>
 <p>Using this idea, we can optimise <code>nf3</code> by using de Bruijn
@@ -1246,7 +1246,7 @@ terms can still use de Bruijn indices as before, and we don’t need to
 transform them into de Bruijn levels. Note that this optimisation is
 only possible because in the process of weak normalisation
 (<code>wnf2</code>, <code>wnf3</code>, and <code>wnf4</code>), we always
-(weakly) normalise a function body when it receives its concrete
+(weakly) normalises a function body when it receives its concrete
 argument. Therefore all variables are instantiated <em>from outside to
 inside</em>.</p>
 <p>For this optimisation, we don’t need to change <code>wnf3</code>, as
@@ -1292,7 +1292,7 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb66-1"><a
 <span id="cb66-11"><a href="#cb66-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- &gt;&gt;&gt; nf5 ((cmul `App` c2 `App` (cinc `App` c2)) `App` Var 0 `App` Var 1)</span></span>
 <span id="cb66-12"><a href="#cb66-12" aria-hidden="true" tabindex="-1"></a><span class="co">-- x1 (x1 (x1 (x1 (x1 (x1 x0)))))</span></span></code></pre></div>
 <p>The normaliser <code>nf5</code> is exactly the version of NbE that
-you would find in András Kovács’s <a
+you wound find in András Kovács’s <a
 href="https://github.com/AndrasKovacs/elaboration-zoo/blob/master/01-eval-closures-debruijn/Main.hs">elaboration
 zoo</a> (which by the way is probably the best online resource for
 anyone who wants to learn practical implementations of type theories).
@@ -1353,7 +1353,7 @@ later.</p>
 <p>Of course this assumption doesn’t always hold. For an extreme
 example, we can have a term (with a free variable <code>x</code>)</p>
 <pre><code>(\y. x y y y y y ... y) (expensiveTm 100)</code></pre>
-<p>where the argument <code>expensiveTm 100</code> is used as arguments
+<p>where the argument <code>expenstiveTm 100</code> is used as arguments
 in the function body 1000000 times. NbE would be very slow on this term
 because the term <code>expensiveTm 100</code> would be normalised to
 weak normal forms before (lazy) substitution, and then in the function
@@ -1642,11 +1642,11 @@ abstraction, and <code>shift 0 i (Abs b)</code> becomes
 shifts isn’t equal to a single shift:</p>
 <pre><code>shift x i . shift y j  =/=  shift _ _</code></pre>
 <p>To understand shifting functions better, we represent any function
-<code>S : Int -&gt; Int</code> transforming de Bruijn indices as a
+<code>S : Int -&gt; Int</code> transforming de Brujn indices as a
 sequence:</p>
 <pre><code>ss = [s0, s1, ..., sN]</code></pre>
 <p>which says that the variable of de Bruijn index <code>0</code> should
-be transformed to <code>s0</code>, the variable of de Bruijn index
+be transformed to <code>s0</code>, the the variable of de Bruijn index
 <code>1</code> should be transformed to <code>s1</code>, etc. Therefore
 the function <code>S</code> is just <code>S v  = ss ! v</code>. Then the
 crucial observation is that the composition <code>S . shift 0 i</code>
@@ -1734,7 +1734,7 @@ sequence in a very predictable manner:</p>
          (forceShifts ss&#39; a)</code></pre>
 <p>We first drop the first <code>i</code>-elements of the sequence
 <code>ss</code>, and then we do recursion for <code>f</code> and
-<code>a</code>. Both the computations <code>forceShifts ss' f</code> and
+<code>a</code>. Both the comptuations <code>forceShifts ss' f</code> and
 <code>forceShifts ss' a</code> can subsequently modify the sequence,
 which is the reason why I said we need a persistent implementation of
 the sequence. However, we <em>can</em> implement
@@ -1742,7 +1742,7 @@ the sequence. However, we <em>can</em> implement
 two recursion calls <em>sequential</em> and ensure that
 <code>forceShifts</code> restores the sequence after it finishes its
 computation. Doing this will imply that we give up the possibility of
-parallelising <code>forceShifts</code>, but this is an acceptable
+parallelise <code>forceShifts</code>, but this is an acceptable
 cost.</p>
 <p>With mutation, stacks with bulk pops can be easily implemented as a
 mutable array, for which we remember an integer <code>delta</code> that
@@ -1756,17 +1756,17 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb101-1"><
 <span id="cb101-5"><a href="#cb101-5" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb101-6"><a href="#cb101-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb101-7"><a href="#cb101-7" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">M</span> s a <span class="ot">=</span> <span class="dt">IndicesArr</span> s <span class="ot">-&gt;</span> <span class="dt">ST</span> s a</span></code></pre></div>
-<p>For mutable array we use Haskell’s <code>STUArray</code>, whose
-operations are encapsulated in the <code>ST</code> monad for a pure
-interface. We define a type
+<p>For mutable arraries we will use Haskell’s <code>STUArray</code>,
+whose operations are encapsulated in the <code>ST</code> monad for a
+pure interface. We define a type
 <code>M s a = IndicesArr s -&gt; ST s a</code> (a reader monad
 transformer applied to the <code>ST</code> monad); most subsequent
 functions will return this type. (These are Haskell specific things. If
-we implement the algorithm in a language where mutable state is
+we implement the algorithm in the a language where mutable state is
 supported as an ambient effect, there is no need to define this
 <code>M</code>).</p>
 <p>To access the <code>v</code>-th element from the top of the stack, we
-just read the array (which is <code>O(1)</code>). We also need to
+just read the array (which is <code>O(1)</code>). We aldo need to
 remember to add <code>delta</code> to the result, since
 <code>delta</code> is logically added to all integers stored in the
 stack:</p>
@@ -1873,10 +1873,10 @@ me that the normaliser <code>nf7</code> (what I called NbE with shared
 normal forms) is known as <em>strong call-by-need evaluation</em> in the
 literature, such as in <a href="https://arxiv.org/abs/2603.21949">this
 paper</a> by Biernacka et al, where ‘strong’ refers to normalising under
-binders. Also, Biernacka et al. implement such a normaliser using
+binders. Also, Biernacka et. al. implement such a normaliser using
 <em>(freshly) named variables</em> in values rather than de Bruijn
-indices, because shifting names is no-op, and normal forms with named
-variables can always be converted back de Bruijn indices easily.
+indices, because shifting names is no-op (and normal forms with named
+variables can always be converted back de Bruijn indices easily).
 Arguably this is a nicer way to do NbE with shared normal forms than
 what we did (<code>nf7</code> and <code>nf8</code>) here, but I still
 like our solutions here, showing how far one can go with only the lazy
@@ -1884,14 +1884,10 @@ tagging trick and some careful analysis of the performance
 bottleneck.</p>
 <p><strong>Editing History</strong></p>
 <ul>
-<li><p>v5 (4 Jun, 2026): typo fixes. This is the version you are viewing
-now; <a href="https://yangzhixuan.github.io/NbEv5.hs">source
-code</a>.</p></li>
-<li><p>v4 (27 Apr, 2026): <a
-href="https://yangzhixuan.github.io/NbEv4.html">rendered HTML</a> and <a
+<li><p>v4 (27 Apr, 2026): this is the version you are viewing now; <a
 href="https://yangzhixuan.github.io/NbEv4.hs">source code</a>.</p>
 <p><a href="https://thwfhk.github.io">Wenhao Tang</a> asked me why not
-use a mutable array to implement stacks with bulk pop. I said it was
+use a mutable arrow to implement stacks with bulk pop. I said it was
 because <code>forceShifts</code> needs the data structure to be
 persistent. And then a few days later… I realised
 <code>forceShifts</code> doesn’t actually need it to be persistent,

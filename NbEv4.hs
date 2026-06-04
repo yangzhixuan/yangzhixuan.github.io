@@ -38,7 +38,7 @@ Preliminary setup
 
 In this article, we will use Haskell as our meta-language. Haskell is a lazy
 language. Although laziness never harms the time complexity of programs (and
-can sometimes make asymptotic improvements!), thinking about the
+can sometimes make asymptotical improvement!), thinking about the
 running cost of lazy programs is a nightmare compared to strict programs.
 Therefore we will turn on the `Strict` extension of GHC, which makes laziness an
 _opt-in_ feature (by decorating binding variables or data fields with `~`) rather
@@ -54,7 +54,7 @@ easier, as there is no implicit laziness that our algorithms secretly rely on.
 
 module NbE where
 
--- In the last section of this article we will need mutable arrays.
+-- In the last section of this article we will need mutable arraries.
 import Data.Array.MArray
 import Data.Array.ST
 import GHC.ST
@@ -219,7 +219,7 @@ This article is written as a `.hs` file so that I can use
 haskell-language-server to run small tests on the fly.  Unfortunately you can't
 do this if you are reading the generated html file. If you want to play with the
 code more interactively, you can download the source code
-[here](https://yangzhixuan.github.io/NbEv5.hs) and load it into your editor.
+[here](https://yangzhixuan.github.io/NbEv4.hs) and load it into your editor.
 -}
 
 -- Church numeral increment
@@ -327,7 +327,7 @@ normalisation work that we should do to `f` and `a` instead?
   1. We must at least normalise `f` to expose its outermost lambda abstraction,
   because that's what we need for doing a beta-reduction. We can normalise `f`
   more, but exposing its outermost layer is the minimum requirement.  In jargon,
-  we must at least normalise `f` to its _weak head normal form_ (WHNF).
+  we must at least normalise `f` to its the _weak head normal form_ (WHNF).
 
   2. We have no constraints on how much normalisation that we do for `a`. We
   can leave it totally unnormalised when supplying it to the function, or we can
@@ -615,12 +615,12 @@ More precisely, we will lazily store a substitution
 ```
 ((((t [a1/x1]) [a2/x2]) [a3/x3]) ... [aN/xN])
 ```
-as a pair of the original term `t` and the list `[aN, ..., a3, a2, a1]`. Applying a
+as pair of the original term `t` and the list `[aN, ..., a3, a2, a1]`. Applying a
 new substitution (for the de Bruijn index 0) is just cons-ing a value to the head
 of the list.
 
 Notice the correctness of this representation hinges on the fact that we are doing
-*capture-avoiding substitution*. When we substitute a value `aN` for a bound variable `xN`,
+*capture-avoiding substitution*. When we substitute a value `aN` for a bound *variable `xN`,
 we can just cons `aN` to the list `[..., a3, a2, a1]` of existing substitutions for the
 *outer bound variables* because we know for sure that `xN` doesn't occur in the arguments
 `[..., a3, a2, a1]` from outer layers. For example, consider the term
@@ -638,7 +638,7 @@ index 1 (i.e. `x`) has been substituted by `wnf1 M`.
 substitution_](https://arxiv.org/abs/1601.01586) for dealing with type formers
 that do not commute with substitutions.  There is similarity between delayed
 substitution and our idea here, but the motivation is completely different:
-there the problem is that some syntactic constructors don't commute with
+loc cit the problem is that some syntactic constructors don't commute with
 substitution, whereas our syntactic constructors do commute with substitution and
 we delay substitution for efficiency considerations.
 -}
@@ -653,13 +653,13 @@ be `Tm`). We need to define a new type for the output of `wnf1`. The name 'weak
 normal forms with lazy substitutions' is too verbose, so we will just call them
 _values_. A value is either
 
-  1. a lambda function, represented by `Closure2` below, which has two fields: the
+  1. a lambda function, represented by `Closure2` below, which two fields: the
   function body and the lazy substitution applied to this function (stored
   as a lazy list of values); or
 
   2. a variable applied to a list of arguments, represented by `Spine2` above,
-  which also has two fields: the de Bruijn index of the variable and the arguments
-  (also stored as a lazy list of values).
+  which also have two fields: the de Bruijn index of the variable and the arguments
+  (stored also as a lazy list of values).
 -}
 
 data Val2 = Closure2 Tm Subst2 | Spine2 Int (LazyList Val2)
@@ -711,7 +711,7 @@ beta b a = shift 0 (-1) (subst b 0 (shift 0 1 a))
 ```
 Substituting `a'` for the variable `0` in `b` should now be just `a' : sub'`.
 However, we now need to shift the de Bruijn indices of the whole substitution by
-1 rather than just `a`, because `sub'` is a lazy substitution applied to `Abs b`
+1 rather than just `a`, because `sub'` is an lazy substitution applied `Abs b`
 rather than `b`. Therefore our new substitution for `b` should be `shift0List 1
 (a' : sub')` where
 -}
@@ -806,7 +806,7 @@ Defunctional normalisation by evaluation
 --------------------------------------------------------------------------------
 
 Now let's move on to optimise `wnf2` further. A notable source of inefficiency
-is the work that we need to do for shifting de Bruijn indices. De Bruijn
+is the work that we needs to do for shifting de Bruijn indices. De Bruijn
 indices are only for representing variables in a scope-safe way. They shall not
 play any central role in normalisation. Therefore we'd like to optimise them out.
 
@@ -819,7 +819,7 @@ the following line from our earlier `wnf1` (with `beta` inlined for easier compa
 ```haskell
        Abs b -> wnf1 (shift 0 (-1) (subst b 0 (shift 0 1 a')))
 ```
-An observation useful to us is that in the setting of `wnf2` the lazy
+A observation useful to us is that in the setting of `wnf2` the lazy
 substitution `a' : sub'` substitutes **all** the free variables of `b`. Because
 weak normalisation on a term never introduces new free variables, we know for
 sure that the free variables in the term `wnf2 b (shift0List 1 (a' : sub')` must
@@ -837,7 +837,7 @@ Then `shift0List (-1) (shift0List 1 ...)` just cancels out!
 ```
 
 The observation allows us to optimise `wnf2` into the following `wnf3`,
-resulting in a new normaliser `nf3`:
+resulting a new normaliser `nf3`:
 -}
 
 wnf3 :: Tm -> Subst2 -> Val2
@@ -1050,14 +1050,14 @@ We will represent `x` as `0`, `y` as `1`, and `z` as `2`. In comparison, de Brui
 indices would represent `z` as `0`, `y` as `1`, and `x` as `2`. In this way,
 if `b` is a lambda abstraction, `b = \w. c`, in the context of `c`, the variables
 `x`, `y`, and `z` would still be `0`, `1`, and `2`. Shifting variables into the
-next level is `O(0)` (i.e. a no-op)! This kind of variable representation
+next level is `O(0)` (i.e. an no-op)! This kind of variable representation
 is sometimes called de Bruijn _levels_.
 
 Using this idea, we can optimise `nf3` by using de Bruijn levels (instead of
 de Bruijn indices) in our semantic domain. The input terms can still use
 de Bruijn indices as before, and we don't need to transform them into de Bruijn
 levels. Note that this optimisation is only possible because in the process of
-weak normalisation (`wnf2`, `wnf3`, and `wnf4`), we always (weakly) normalise a
+weak normalisation (`wnf2`, `wnf3`, and `wnf4`), we always (weakly) normalises a
 function body when it receives its concrete argument.  Therefore all variables
 are instantiated _from outside to inside_.
 -}
@@ -1110,7 +1110,7 @@ nf5 t = let n = fv t
 -- x1 (x1 (x1 (x1 (x1 (x1 x0)))))
 
 {-
-The normaliser `nf5` is exactly the version of NbE that you would find in
+The normaliser `nf5` is exactly the version of NbE that you wound find in
 András Kovács's [elaboration zoo](https://github.com/AndrasKovacs/elaboration-zoo/blob/master/01-eval-closures-debruijn/Main.hs)
 (which by the way is probably the best online resource for anyone who wants to
 learn practical implementations of type theories). This is an efficient
@@ -1177,7 +1177,7 @@ can have a term (with a free variable `x`)
 ```
 (\y. x y y y y y ... y) (expensiveTm 100)
 ```
-where the argument `expensiveTm 100` is used as arguments in the function
+where the argument `expenstiveTm 100` is used as arguments in the function
 body 1000000 times. NbE would be very slow on this term because the term
 `expensiveTm 100` would be normalised to weak normal forms before (lazy)
 substitution, and then in the function body it would be duplicated 1000000
@@ -1499,12 +1499,12 @@ shift x i . shift y j  =/=  shift _ _
 ```
 
 To understand shifting functions better, we represent any function
-`S : Int -> Int` transforming de Bruijn indices as a sequence:
+`S : Int -> Int` transforming de Brujn indices as a sequence:
 ```
 ss = [s0, s1, ..., sN]
 ```
 which says that the variable of de Bruijn index `0` should be transformed to
-`s0`, the variable of de Bruijn index `1` should be transformed to `s1`,
+`s0`, the the variable of de Bruijn index `1` should be transformed to `s1`,
 etc. Therefore the function `S` is just `S v  = ss ! v`. Then the crucial
 observation is that the composition `S . shift 0 i` is
 ```
@@ -1600,7 +1600,7 @@ why I said we need a persistent implementation of the sequence. However, we
 _can_ implement `forceShifts` with a mutable sequence, as long as we make
 the two recursion calls _sequential_ and ensure that `forceShifts` restores the
 sequence after it finishes its computation. Doing this will imply that we give
-up the possibility of parallelising `forceShifts`, but this is an acceptable cost.
+up the possibility of parallelise `forceShifts`, but this is an acceptable cost.
 
 With mutation, stacks with bulk pops can be easily implemented as a mutable
 array, for which we remember an integer `delta` that is logically added to
@@ -1621,7 +1621,7 @@ For mutable array we use Haskell's `STUArray`, whose operations are encapsulated
 in the `ST` monad for a pure interface. We define a type `M s a = IndicesArr s
 -> ST s a` (a reader monad transformer applied to the `ST` monad); most
 subsequent functions will return this type.  (These are Haskell specific things.
-If we implement the algorithm in a language where mutable state is supported
+If we implement the algorithm in the a language where mutable state is supported
 as an ambient effect, there is no need to define this `M`).
 -}
 
@@ -1744,7 +1744,7 @@ Kovács](https://andraskovacs.github.io) pointed out to me that the normaliser
 `nf7` (what I called NbE with shared normal forms) is known as _strong
 call-by-need evaluation_ in the literature, such as in [this
 paper](https://arxiv.org/abs/2603.21949) by Biernacka et al, where 'strong'
-refers to normalising under binders. Also, Biernacka et al. implement such a
+refers to normalising under binders. Also, Biernacka et. al. implement such a
 normaliser using _(freshly) named variables_ in values rather than de Bruijn
 indices, because shifting names is no-op, and normal forms with named
 variables can always be converted back de Bruijn indices easily. Arguably this
@@ -1758,12 +1758,9 @@ bottleneck.
 {-
 **Editing History**
 
-* v5 (4 Jun, 2026): typo fixes. This is the version you are viewing now; [source code](https://yangzhixuan.github.io/NbEv5.hs).
+* v4 (27 Apr, 2026): this is the version you are viewing now; [source code](https://yangzhixuan.github.io/NbEv4.hs).
 
-* v4 (27 Apr, 2026):  [rendered HTML](https://yangzhixuan.github.io/NbEv4.html) and
-  [source code](https://yangzhixuan.github.io/NbEv4.hs).
-
-  [Wenhao Tang](https://thwfhk.github.io) asked me why not use a mutable array
+  [Wenhao Tang](https://thwfhk.github.io) asked me why not use a mutable arrow
   to implement stacks with bulk pop. I said it was because `forceShifts` needs
   the data structure to be persistent. And then a few days later... I realised
   `forceShifts` doesn't actually need it to be persistent, which leads us to
