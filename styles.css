@@ -226,6 +226,10 @@ ul li {
   font-style: italic;
 }
 
+.pub-note {
+  font-style: normal;
+}
+
 .pub-authors a {
   color: inherit;
   text-decoration: none;
